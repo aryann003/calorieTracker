@@ -40,14 +40,23 @@
  */
 
 
+ /* Grid rhythm */
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+
 
       /* Equal height cards on left side */
 .left-card {
-  min-height: 220px;
+  min-height: 120px;
 }
 
 .macros-card {
-  min-height: 320px;
+  min-height: 250px;
 }
 
 body {
@@ -96,22 +105,6 @@ table {
   overflow: hidden;
 }
 
-.table thead th {
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.table tbody tr:hover {
-  background-color: #f1f7f8;
-}
-
-table th,
-table td {
-  vertical-align: middle;
-  padding: 12px;
-}
-
-
 .btn {
   border-radius: 10px;
 }
@@ -134,4 +127,49 @@ h6 {
   color: #6c757d;
 }
 
+
+
+
+.macros-card {
+  min-height: 280px;
+  padding-top: 8px;
+}
+
+.macro-row {
+  margin-bottom: 18px;
+}
+
+.macro-label {
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+}
+
+
+
+.progress-bar.carbs {
+  background: linear-gradient(90deg, #4dabf7, #228be6);
+}
+
+.progress-bar.protein {
+  background: linear-gradient(90deg, #f59f00, #f08c00);
+}
+
+.progress-bar.fat {
+  background: linear-gradient(90deg, #fa5252, #e03131);
+}
+
+
+.table thead {
+  background: #1f2933;
+  color: #fff;
+}
+
+.table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background-color: #eef6f8;
+}
 

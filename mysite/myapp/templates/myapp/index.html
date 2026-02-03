@@ -5,33 +5,41 @@
     <meta charset="UTF-8" />
     <title>Food Tracker</title>
 
-    <!-- Bootstrap -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'myapp/css/main.css' %}" />
   </head>
 
   <body>
     <div class="page-wrapper container py-4">
-      <!-- Header -->
+      <br />
+      <br />
+      {% comment %}
+      <h1 class="text-center mb-4 fw-bold">Food Tracker</h1>
+      <br />
+      {% endcomment %} {% comment %}
       <h4 class="text-center mb-4 fw-bold">
         Calories: {{ total_calories }} / {{ CALORIE_GOAL }} kcal
       </h4>
+      {% endcomment %}
 
       <div class="row g-4">
-        <!-- LEFT: GRAPHS -->
-        <div class="col-12 col-lg-5">
+        <!-- LEFT SIDE -->
+        <div class="col-12 col-lg-5 left-column">
           <!-- Calories -->
+          {% if status == "under" %}
+          <span class="badge bg-success">On Track</span>
+          {% else %}
+          <span class="badge bg-danger">Over</span>
+          {% endif %}
+
+          <p class="small mt-1">Remaining: {{ remaining_calories }} kcal</p>
+
           <div class="card mb-4 shadow-sm">
             <div class="card-body">
-              <h6 class="text-center mb-2 fw-semibold">🔥 Calories</h6>
-              <div class="d-flex justify-content-between small mb-1">
-                <span>Taken</span>
-                <span>{{ calPercent }}%</span>
-              </div>
+              <h6 class="text-center">🔥 Calories</h6>
               <div class="progress">
                 <div
                   class="progress-bar bg-success"
@@ -44,45 +52,42 @@
           <!-- Macros -->
           <div class="card shadow-sm">
             <div class="card-body">
-              <h6 class="text-center mb-3 fw-semibold">🥗 Macros</h6>
+              <h6 class="text-center mb-3">🥗 Macros</h6>
 
-              <!-- Carbs -->
-              <div class="mb-3">
-                <div class="d-flex justify-content-between small">
+              <div class="macro-row">
+                <div class="macro-label">
                   <span>Carbs</span>
                   <span>{{ carbPercent }}%</span>
                 </div>
                 <div class="progress">
                   <div
-                    class="progress-bar bg-info"
+                    class="progress-bar carbs"
                     style="width: {{ carbPercent }}%"
                   ></div>
                 </div>
               </div>
 
-              <!-- Protein -->
-              <div class="mb-3">
-                <div class="d-flex justify-content-between small">
+              <div class="macro-row">
+                <div class="macro-label">
                   <span>Protein</span>
                   <span>{{ proteinPercent }}%</span>
                 </div>
                 <div class="progress">
                   <div
-                    class="progress-bar bg-warning"
+                    class="progress-bar protein"
                     style="width: {{ proteinPercent }}%"
                   ></div>
                 </div>
               </div>
 
-              <!-- Fat -->
-              <div>
-                <div class="d-flex justify-content-between small">
+              <div class="macro-row">
+                <div class="macro-label">
                   <span>Fat</span>
                   <span>{{ fatPercent }}%</span>
                 </div>
                 <div class="progress">
                   <div
-                    class="progress-bar bg-danger"
+                    class="progress-bar fat"
                     style="width: {{ fatPercent }}%"
                   ></div>
                 </div>
@@ -91,43 +96,58 @@
           </div>
         </div>
 
-        <!-- RIGHT: CONSUME FOOD -->
-        <div class="col-12 col-lg-7">
-          <!-- Food Form -->
-          <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-              <form method="POST" class="d-flex flex-wrap gap-2">
-                {% csrf_token %}
-                <select
-                  name="food_consumed"
-                  class="form-select flex-grow-1"
-                  required
-                >
-                  {% for food in foods %}
-                  <option value="{{ food.id }}">{{ food.name }}</option>
-                  {% endfor %}
-                </select>
+        <!-- RIGHT SIDE -->
+        <div class="col-12 col-lg-7 right-column">
+          <!-- DATE -->
+          <div
+            class="d-flex flex-wrap justify-content-between align-items-center mb-4"
+          >
+            <h4 class="fw-bold mb-2 mb-md-0">
+              Calories: {{ total_calories }} / {{ CALORIE_GOAL }} kcal
+            </h4>
 
-                <a
-                  href="{% url 'add_food' %}"
-                  class="btn btn-outline-secondary"
-                >
-                  + Add Food
-                </a>
-
-                <button class="btn btn-primary">Add</button>
-              </form>
-            </div>
+            <form method="GET" class="d-flex gap-2 align-items-center">
+              <input
+                type="date"
+                name="date"
+                value="{{ selected_date|date:'Y-m-d' }}"
+                class="form-control"
+              />
+              <button class="btn btn-outline-light">Go</button>
+            </form>
           </div>
 
-          <!-- Food Table -->
-          <div class="card shadow-sm">
+          <!-- ADD FOOD -->
+          <form method="POST" class="d-flex flex-wrap gap-2">
+            {% csrf_token %}
+
+            <select
+              name="food_consumed"
+              class="form-select flex-grow-1"
+              required
+            >
+              {% for food in foods %}
+              <option value="{{ food.id }}">{{ food.name }}</option>
+              {% endfor %}
+            </select>
+
+            <select name="meal" class="form-select" style="max-width: 150px">
+              <option value="breakfast">🍳 Breakfast</option>
+              <option value="lunch">🍛 Lunch</option>
+              <option value="dinner">🍽 Dinner</option>
+              <option value="snack">🍎 Snack</option>
+            </select>
+
+            <button class="btn btn-primary">Add</button>
+          </form>
+
+          <!-- TABLE -->
+          <div class="card">
             <div class="card-body p-0">
-              <table
-                class="table table-striped table-bordered mb-0 text-center"
-              >
+              <table class="table table-bordered text-center mb-0">
                 <thead class="table-dark">
                   <tr>
+                    <th>Meal</th>
                     <th>Food</th>
                     <th>Cal</th>
                     <th>Carbs</th>
@@ -136,10 +156,18 @@
                     <th>Action</th>
                   </tr>
                 </thead>
-
                 <tbody>
-                  {% for c in consumed_food %}
+                  {% if consumed_food %} {% regroup consumed_food by meal as
+                  meal_list %} {% for meal in meal_list %}
+                  <tr class="table-secondary fw-bold">
+                    <td colspan="7" class="text-start ps-3">
+                      🍽 {{ meal.grouper|title }}
+                    </td>
+                  </tr>
+
+                  {% for c in meal.list %}
                   <tr>
+                    <td></td>
                     <td>{{ c.food_consumed.name }}</td>
                     <td>{{ c.food_consumed.calories }}</td>
                     <td>{{ c.food_consumed.carbs }}</td>
@@ -149,31 +177,18 @@
                       <a
                         href="{% url 'delete_consume' c.id %}"
                         class="btn btn-sm btn-danger"
-                        onclick="return confirm('Delete this item?');"
+                        >❌</a
                       >
-                        ❌
-                      </a>
                     </td>
                   </tr>
-                  {% empty %}
+                  {% endfor %} {% endfor %} {% else %}
                   <tr>
-                    <td colspan="6" class="text-muted py-4">
-                      No food consumed yet 🍎
+                    <td colspan="7" class="text-center py-4">
+                      No food logged 🍎
                     </td>
                   </tr>
-                  {% endfor %}
+                  {% endif %}
                 </tbody>
-
-                <tfoot class="fw-bold">
-                  <tr>
-                    <td>Total</td>
-                    <td>{{ total_calories }}</td>
-                    <td>{{ total_carbs }}</td>
-                    <td>{{ total_protein }}</td>
-                    <td>{{ total_fat }}</td>
-                    <td>-</td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           </div>
