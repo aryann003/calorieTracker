@@ -1,0 +1,32 @@
+      body {
+        background: linear-gradient(135deg, #f5f7fa, #e4ecf7);
+        min-height: 100vh;
+      }
+
+      .form-wrapper {
+        max-width: 520px;
+        margin: auto;
+      }
+
+      .card {
+        border-radius: 16px;
+      }
+
+      h4 {
+        font-weight: 700;
+      }
+
+      label {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      input {
+        border-radius: 10px !important;
+      }
+
+      .btn {
+        border-radius: 10px;
+        padding: 8px 18px;
+      }
+    

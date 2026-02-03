@@ -21,4 +21,6 @@ from myapp import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.index, name='index'),
+    path('delete/<int:consume_id>/', views.delete_consume, name='delete_consume'),
+    path('add-food/', views.add_food, name='add_food'),
 ]

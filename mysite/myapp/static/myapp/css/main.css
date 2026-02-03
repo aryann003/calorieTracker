@@ -1,0 +1,137 @@
+/* 
+      body {
+        background: linear-gradient(135deg, #629FAD, #629FAD);
+        min-height: 100vh;
+      }
+
+      .page-wrapper {
+        max-width: 1100px;
+        margin: auto;
+      }
+
+      .card {
+        border-radius: 16px;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        transition: 0.2s ease;
+      }
+
+      .progress {
+        height: 14px;
+        border-radius: 20px;
+      }
+
+      .progress-bar {
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      table th,
+      table td {
+        vertical-align: middle;
+      }
+    
+
+
+
+ */
+
+
+
+      /* Equal height cards on left side */
+.left-card {
+  min-height: 220px;
+}
+
+.macros-card {
+  min-height: 320px;
+}
+
+body {
+  background: linear-gradient(
+    135deg,
+    #5f9ea0 0%,
+    #6fb1b8 50%,
+    #5a9aa6 100%
+  );
+  min-height: 100vh;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.card {
+  border-radius: 18px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+  transition: all 0.25s ease;
+}
+
+
+.progress {
+  height: 16px;
+  border-radius: 20px;
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: width 0.6s ease;
+}
+
+
+
+
+table {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table thead th {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f7f8;
+}
+
+table th,
+table td {
+  vertical-align: middle;
+  padding: 12px;
+}
+
+
+.btn {
+  border-radius: 10px;
+}
+
+.btn-danger {
+  background-color: #e63946;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #d62839;
+}
+
+h4,
+h6 {
+  color: #1f2933;
+}
+
+.small {
+  color: #6c757d;
+}
+
+
