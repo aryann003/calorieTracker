@@ -1,18 +1,21 @@
+from multiprocessing import context
+from django.http import HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from datetime import datetime
-
+from django.contrib import messages
 from .models import Consume, Food
 from .forms import FoodForm
+
 
 
 @login_required
 def index(request):
     foods = Food.objects.filter(user=request.user) | Food.objects.filter(user__isnull=True)
 
-    # ✅ DATE HANDLING
+    # DATE HANDLING
     date_str = request.GET.get('date')
     if date_str:
         selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -20,6 +23,8 @@ def index(request):
         selected_date = now().date()
 
     # ✅ ADD FOOD (POST)
+    today = now().date()
+    is_today = selected_date == today
     if request.method == 'POST':
         food_id = request.POST.get('food_consumed')
         food = get_object_or_404(Food, id=food_id)
@@ -34,11 +39,11 @@ def index(request):
 
         return redirect(f"/?date={selected_date}")
 
-    # ✅ FETCH CONSUMED FOOD
+    # FETCH CONSUMED FOOD
     consumed_food = Consume.objects.filter(
         user=request.user,
         date=selected_date
-    )
+    ).order_by('meal')
 
     totals = consumed_food.aggregate(
         total_calories=Sum('food_consumed__calories'),
@@ -85,6 +90,7 @@ def index(request):
         'CARBS_GOAL': CARBS_GOAL,
         'PROTEIN_GOAL': PROTEIN_GOAL,
         'FAT_GOAL': FAT_GOAL,
+        'is_today': is_today,
     }
 
     return render(request, 'myapp/index.html', context)
@@ -93,6 +99,10 @@ def index(request):
 @login_required
 def delete_consume(request, consume_id):
     consume = get_object_or_404(Consume, id=consume_id, user=request.user)
+    if(consume.date < now().date()):
+        messages.warning(request, "You cannot delete entries from previous dates.")
+        return redirect(f"/?date={consume.date}")
+
     date = consume.date
     consume.delete()
     return redirect(f"/?date={date}")

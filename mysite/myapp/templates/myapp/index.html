@@ -14,42 +14,30 @@
 
   <body>
     <div class="page-wrapper container py-4">
-      <br />
-      <br />
-      {% comment %}
-      <h1 class="text-center mb-4 fw-bold">Food Tracker</h1>
-      <br />
-      {% endcomment %} {% comment %}
-      <h4 class="text-center mb-4 fw-bold">
-        Calories: {{ total_calories }} / {{ CALORIE_GOAL }} kcal
-      </h4>
-      {% endcomment %}
+      <br /><br />
 
+      <!-- LEFT COLUMN -->
       <div class="row g-4">
-        <!-- LEFT SIDE -->
         <div class="col-12 col-lg-5 left-column">
-          <!-- Calories -->
+          <!-- Calories Status -->
           {% if status == "under" %}
-          <span class="badge bg-success">On Track</span>
+            <span class="badge bg-success">On Track</span>
           {% else %}
-          <span class="badge bg-danger">Over</span>
+            <span class="badge bg-danger">Over</span>
           {% endif %}
-
           <p class="small mt-1">Remaining: {{ remaining_calories }} kcal</p>
 
+          <!-- Calories Card -->
           <div class="card mb-4 shadow-sm">
             <div class="card-body">
               <h6 class="text-center">🔥 Calories</h6>
               <div class="progress">
-                <div
-                  class="progress-bar bg-success"
-                  style="width: {{ calPercent }}%"
-                ></div>
+                <div class="progress-bar bg-success" style="width: {{ calPercent }}%"></div>
               </div>
             </div>
           </div>
 
-          <!-- Macros -->
+          <!-- Macros Card -->
           <div class="card shadow-sm">
             <div class="card-body">
               <h6 class="text-center mb-3">🥗 Macros</h6>
@@ -60,10 +48,7 @@
                   <span>{{ carbPercent }}%</span>
                 </div>
                 <div class="progress">
-                  <div
-                    class="progress-bar carbs"
-                    style="width: {{ carbPercent }}%"
-                  ></div>
+                  <div class="progress-bar carbs" style="width: {{ carbPercent }}%"></div>
                 </div>
               </div>
 
@@ -73,10 +58,7 @@
                   <span>{{ proteinPercent }}%</span>
                 </div>
                 <div class="progress">
-                  <div
-                    class="progress-bar protein"
-                    style="width: {{ proteinPercent }}%"
-                  ></div>
+                  <div class="progress-bar protein" style="width: {{ proteinPercent }}%"></div>
                 </div>
               </div>
 
@@ -86,22 +68,17 @@
                   <span>{{ fatPercent }}%</span>
                 </div>
                 <div class="progress">
-                  <div
-                    class="progress-bar fat"
-                    style="width: {{ fatPercent }}%"
-                  ></div>
+                  <div class="progress-bar fat" style="width: {{ fatPercent }}%"></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT SIDE -->
+        <!-- RIGHT COLUMN -->
         <div class="col-12 col-lg-7 right-column">
-          <!-- DATE -->
-          <div
-            class="d-flex flex-wrap justify-content-between align-items-center mb-4"
-          >
+          <!-- Date Selector -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
             <h4 class="fw-bold mb-2 mb-md-0">
               Calories: {{ total_calories }} / {{ CALORIE_GOAL }} kcal
             </h4>
@@ -117,15 +94,16 @@
             </form>
           </div>
 
-          <!-- ADD FOOD -->
-          <form method="POST" class="d-flex flex-wrap gap-2">
-            {% csrf_token %}
+          <!-- Add Your Own Food Button -->
+          <div class="mb-3">
+            <a href="{% url 'add_food' %}" class="btn btn-success">➕</a>
+          </div>
 
-            <select
-              name="food_consumed"
-              class="form-select flex-grow-1"
-              required
-            >
+          <!-- Inline Add Food Form (only for today) -->
+          {% if is_today %}
+          <form method="POST" class="d-flex flex-wrap gap-2 mb-3">
+            {% csrf_token %}
+            <select name="food_consumed" class="form-select flex-grow-1" required>
               {% for food in foods %}
               <option value="{{ food.id }}">{{ food.name }}</option>
               {% endfor %}
@@ -140,8 +118,13 @@
 
             <button class="btn btn-primary">Add</button>
           </form>
+          {% else %}
+          <p class="text-muted">
+            You cannot add food to past dates. <br />
+          </p>
+          {% endif %}
 
-          <!-- TABLE -->
+          <!-- Food Table -->
           <div class="card">
             <div class="card-body p-0">
               <table class="table table-bordered text-center mb-0">
@@ -157,35 +140,34 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% if consumed_food %} {% regroup consumed_food by meal as
-                  meal_list %} {% for meal in meal_list %}
-                  <tr class="table-secondary fw-bold">
-                    <td colspan="7" class="text-start ps-3">
-                      🍽 {{ meal.grouper|title }}
-                    </td>
-                  </tr>
+                  {% if consumed_food %}
+                    {% regroup consumed_food by meal as meal_list %}
+                    {% for meal in meal_list %}
+                    <tr class="table-secondary fw-bold">
+                      <td colspan="7" class="text-start ps-3">🍽 {{ meal.grouper|title }}</td>
+                    </tr>
 
-                  {% for c in meal.list %}
+                    {% for c in meal.list %}
+                    <tr {% if not is_today %} class="table-light text-muted" {% endif %}>
+                      <td></td>
+                      <td>{{ c.food_consumed.name }}</td>
+                      <td>{{ c.food_consumed.calories }}</td>
+                      <td>{{ c.food_consumed.carbs }}</td>
+                      <td>{{ c.food_consumed.protein }}</td>
+                      <td>{{ c.food_consumed.fat }}</td>
+                      <td>
+                        {% if is_today %}
+                          <a href="{% url 'delete_consume' c.id %}" class="btn btn-sm btn-danger">❌</a>
+                        {% else %}
+                          <span class="text-muted">🔒</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                  {% else %}
                   <tr>
-                    <td></td>
-                    <td>{{ c.food_consumed.name }}</td>
-                    <td>{{ c.food_consumed.calories }}</td>
-                    <td>{{ c.food_consumed.carbs }}</td>
-                    <td>{{ c.food_consumed.protein }}</td>
-                    <td>{{ c.food_consumed.fat }}</td>
-                    <td>
-                      <a
-                        href="{% url 'delete_consume' c.id %}"
-                        class="btn btn-sm btn-danger"
-                        >❌</a
-                      >
-                    </td>
-                  </tr>
-                  {% endfor %} {% endfor %} {% else %}
-                  <tr>
-                    <td colspan="7" class="text-center py-4">
-                      No food logged 🍎
-                    </td>
+                    <td colspan="7" class="text-center py-4">No food logged 🍎</td>
                   </tr>
                   {% endif %}
                 </tbody>
