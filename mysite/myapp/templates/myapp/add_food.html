@@ -5,27 +5,26 @@
     <meta charset="UTF-8" />
     <title>Add Food</title>
 
-    <!-- Bootstrap -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'myapp/css/add_food.css' %}" />
   </head>
 
   <body>
     <div class="container py-5">
       <div class="form-wrapper">
-        <!-- Title -->
-        <h4 class="text-center mb-4">➕ Add Custom Food</h4>
+        <h4 class="text-center mb-4">Add Custom Food</h4>
 
-        <!-- Form Card -->
         <form method="POST" class="card shadow-sm p-4">
           {% csrf_token %}
 
-          <!-- Form Fields -->
           <div class="mb-3">{{ form.name.label_tag }} {{ form.name }}</div>
 
           <div class="mb-3">
@@ -40,13 +39,12 @@
 
           <div class="mb-4">{{ form.fat.label_tag }} {{ form.fat }}</div>
 
-          <!-- Buttons -->
           <div class="d-flex justify-content-between">
             <a href="{% url 'index' %}" class="btn btn-outline-secondary">
-              ← Cancel
+              Back
             </a>
 
-            <button type="submit" class="btn btn-success">💾 Save Food</button>
+            <button type="submit" class="btn btn-success">Save Food</button>
           </div>
         </form>
       </div>

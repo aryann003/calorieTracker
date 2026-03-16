@@ -1,32 +1,103 @@
-      body {
-        background: linear-gradient(135deg, #f5f7fa, #e4ecf7);
-        min-height: 100vh;
-      }
+body {
+  background: radial-gradient(110% 110% at 15% 20%, #eef5ff 0, #d5e9ff 40%, #f7fbff 100%);
+  min-height: 100vh;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  color: #0f172a;
+}
 
-      .form-wrapper {
-        max-width: 520px;
-        margin: auto;
-      }
+.form-wrapper {
+  max-width: 520px;
+  margin: auto;
+}
 
-      .card {
-        border-radius: 16px;
-      }
+.card {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+}
 
-      h4 {
-        font-weight: 700;
-      }
+h4 {
+  font-weight: 700;
+}
 
-      label {
-        font-weight: 600;
-        margin-bottom: 4px;
-      }
+label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
 
-      input {
-        border-radius: 10px !important;
-      }
+input {
+  border-radius: 12px !important;
+  border: 1px solid #dfe6f1;
+  padding: 10px 12px;
+}
 
-      .btn {
-        border-radius: 10px;
-        padding: 8px 18px;
-      }
-    
+.btn {
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+.btn-success {
+  background: linear-gradient(120deg, #2f9e8b, #5d6bff);
+  border: none;
+}
+
+.btn-outline-secondary {
+  border-color: #dfe6f1;
+}
+
+/* Dark theme for food tracker */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: radial-gradient(110% 110% at 15% 20%, #0c1220 0, #0a0f1b 50%, #070b13 100%);
+    color: #e9edf8;
+  }
+
+  .card {
+    background: #101623;
+    border-color: #1e2637;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  }
+
+  h4,
+  label,
+  .card,
+  .card *:not(.btn):not(.btn *):not(input):not(select) {
+    color: #e9edf8;
+  }
+
+  a {
+    color: #b7c2ff;
+  }
+
+  input {
+    background: #111827;
+    color: #e9edf8;
+    border-color: #1e2637;
+  }
+
+  input::placeholder {
+    color: #9fb0c8;
+  }
+
+  .btn-outline-secondary {
+    color: #e9edf8;
+    border-color: #1e2637;
+    background: transparent;
+  }
+
+  .btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .btn-success {
+    color: #f7f9ff;
+  }
+
+  .text-muted,
+  .form-text {
+    color: #9fb0c8 !important;
+  }
+}

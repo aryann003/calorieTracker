@@ -3,179 +3,378 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Food Tracker</title>
-
+    <title>Calorie Tracker</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="{% static 'myapp/css/main.css' %}" />
   </head>
 
   <body>
-    <div class="page-wrapper container py-4">
-      <br /><br />
-
-      <!-- LEFT COLUMN -->
-      <div class="row g-4">
-        <div class="col-12 col-lg-5 left-column">
-          <!-- Calories Status -->
-          {% if status == "under" %}
-            <span class="badge bg-success">On Track</span>
-          {% else %}
-            <span class="badge bg-danger">Over</span>
-          {% endif %}
-          <p class="small mt-1">Remaining: {{ remaining_calories }} kcal</p>
-
-          <!-- Calories Card -->
-          <div class="card mb-4 shadow-sm">
-            <div class="card-body">
-              <h6 class="text-center">🔥 Calories</h6>
-              <div class="progress">
-                <div class="progress-bar bg-success" style="width: {{ calPercent }}%"></div>
-              </div>
+    <div class="background-blur"></div>
+    <main class="page-wrapper container-xxl py-5">
+      <header class="hero card glass mb-4">
+        <div
+          class="d-flex flex-wrap justify-content-between align-items-start gap-3"
+        >
+          <div>
+            <p class="eyebrow mb-1">Daily balance</p>
+            <h1 class="display-6 mb-2">Calorie Tracker</h1>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              {% if status == "under" %}
+              <span class="pill pill-good">On track</span>
+              {% else %}
+              <span class="pill pill-warn">Over goal</span>
+              {% endif %}
+              <span class="pill pill-ghost"
+                >Remaining {{ remaining_calories }} kcal</span
+              >
+              <span class="pill pill-ghost"
+                >Date: {{ selected_date|date:"M d, Y" }}</span
+              >
             </div>
           </div>
 
-          <!-- Macros Card -->
-          <div class="card shadow-sm">
-            <div class="card-body">
-              <h6 class="text-center mb-3">🥗 Macros</h6>
-
-              <div class="macro-row">
-                <div class="macro-label">
-                  <span>Carbs</span>
-                  <span>{{ carbPercent }}%</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar carbs" style="width: {{ carbPercent }}%"></div>
-                </div>
-              </div>
-
-              <div class="macro-row">
-                <div class="macro-label">
-                  <span>Protein</span>
-                  <span>{{ proteinPercent }}%</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar protein" style="width: {{ proteinPercent }}%"></div>
-                </div>
-              </div>
-
-              <div class="macro-row">
-                <div class="macro-label">
-                  <span>Fat</span>
-                  <span>{{ fatPercent }}%</span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar fat" style="width: {{ fatPercent }}%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT COLUMN -->
-        <div class="col-12 col-lg-7 right-column">
-          <!-- Date Selector -->
-          <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold mb-2 mb-md-0">
-              Calories: {{ total_calories }} / {{ CALORIE_GOAL }} kcal
-            </h4>
-
-            <form method="GET" class="d-flex gap-2 align-items-center">
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <form
+              method="GET"
+              class="date-form d-flex flex-wrap align-items-center gap-2"
+            >
+              <label class="small text-uppercase fw-bold opacity-75"
+                >Jump to</label
+              >
               <input
                 type="date"
                 name="date"
                 value="{{ selected_date|date:'Y-m-d' }}"
                 class="form-control"
               />
-              <button class="btn btn-outline-light">Go</button>
+              <button class="btn btn-dark shadow-sm">Go</button>
             </form>
+            <button
+              class="btn btn-outline-primary profile-toggle"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#profileCard"
+              aria-expanded="false"
+              aria-controls="profileCard"
+            >
+              Profile
+            </button>
+          </div>
+        </div>
+
+        <div class="collapse show mb-3" id="profileCard">
+          <div class="card glass p-4 profile-card">
+            <div
+              class="d-flex flex-wrap justify-content-between align-items-center mb-3"
+            >
+              <div>
+                <p class="eyebrow mb-1">Profile</p>
+                <h5 class="mb-1">
+                  {{ request.user.get_full_name|default:request.user.username }}
+                </h5>
+                <span class="microcopy text-muted"></span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <a
+                  href="{% url 'password_change' %}"
+                  class="btn btn-outline-primary btn-sm"
+                  >Change password</a
+                >
+                <a
+                  href="{% url 'logout' %}"
+                  class="btn btn-outline-danger btn-sm"
+                  >Log out</a
+                >
+                <a
+                  href="{% url 'home' %}"
+                  class="btn btn-outline-secondary btn-sm"
+                  >Home</a
+                >
+                <button
+                  class="btn btn-outline-primary profile-toggle btn-sm"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#profileCard"
+                  aria-expanded="true"
+                  aria-controls="profileCard"
+                >
+                  Hide
+                </button>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label text-uppercase small mb-1"
+                  >Weight (kg)</label
+                >
+                <input
+                  type="number"
+                  min="1"
+                  step="0.1"
+                  id="userWeight"
+                  class="form-control soft-input"
+                  placeholder="e.g. 68.5"
+                />
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label text-uppercase small mb-1"
+                  >Height (cm)</label
+                >
+                <input
+                  type="number"
+                  min="50"
+                  step="0.5"
+                  id="userHeight"
+                  class="form-control soft-input"
+                  placeholder="e.g. 172"
+                />
+              </div>
+            </div>
+            <div class="d-flex flex-wrap gap-3 mt-3 align-items-center">
+              <div class="d-flex align-items-baseline gap-2">
+                <span class="eyebrow mb-0">BMI</span>
+                <span class="fw-semibold" id="bmiValue">--</span>
+              </div>
+              <button class="btn btn-dark" id="saveProfile">Save</button>
+              <span class="microcopy text-muted" id="profileStatus"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-4">
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="metric-card">
+              <div class="metric-label">Calories</div>
+              <div class="metric-value">
+                {{ total_calories }}<span class="metric-suffix"
+                  >/{{ CALORIE_GOAL }}</span
+                >
+              </div>
+              <div class="progress progress-thick">
+                <div
+                  class="progress-bar progress-calories"
+                  style="width: {{ calPercent }}%"
+                ></div>
+              </div>
+              <div class="metric-meta">Daily burn target</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="metric-card">
+              <div class="metric-label">Carbs</div>
+              <div class="metric-value">{{ total_carbs }}g</div>
+              <div class="progress progress-thick">
+                <div
+                  class="progress-bar progress-carbs"
+                  style="width: {{ carbPercent }}%"
+                ></div>
+              </div>
+              <div class="metric-meta">
+                {{ carbPercent|floatformat:1 }}% of {{ CARBS_GOAL }}g goal
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="metric-card">
+              <div class="metric-label">Protein</div>
+              <div class="metric-value">{{ total_protein }}g</div>
+              <div class="progress progress-thick">
+                <div
+                  class="progress-bar progress-protein"
+                  style="width: {{ proteinPercent }}%"
+                ></div>
+              </div>
+              <div class="metric-meta">
+                {{ proteinPercent|floatformat:1 }}% of {{ PROTEIN_GOAL }}g goal
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-md-6 col-xl-3">
+            <div class="metric-card">
+              <div class="metric-label">Fat</div>
+              <div class="metric-value">{{ total_fat }}g</div>
+              <div class="progress progress-thick">
+                <div
+                  class="progress-bar progress-fat"
+                  style="width: {{ fatPercent }}%"
+                ></div>
+              </div>
+              <div class="metric-meta">
+                {{ fatPercent|floatformat:1 }}% of {{ FAT_GOAL }}g goal
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="card glass p-4 mb-4">
+        <div
+          class="d-flex flex-wrap justify-content-between align-items-center gap-3"
+        >
+          <div>
+            <p class="eyebrow mb-1">Log food</p>
+            <h4 class="mb-0">Quick add for {{ selected_date|date:"M d" }}</h4>
+            {% if not is_today %}
+            <small class="text-muted"
+              >Adding is only available for today.</small
+            >
+            {% endif %}
           </div>
 
-          <!-- Add Your Own Food Button -->
-          <div class="mb-3">
-            <a href="{% url 'add_food' %}" class="btn btn-success">➕</a>
+          <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'add_food' %}" class="btn btn-outline-primary"
+              >Create food</a
+            >
           </div>
+        </div>
 
-          <!-- Inline Add Food Form (only for today) -->
-          {% if is_today %}
-          <form method="POST" class="d-flex flex-wrap gap-2 mb-3">
-            {% csrf_token %}
-            <select name="food_consumed" class="form-select flex-grow-1" required>
+        {% if is_today %}
+        <form method="POST" class="row g-2 align-items-center mt-3">
+          {% csrf_token %}
+          <div class="col-12 col-lg">
+            <label class="form-label text-uppercase small mb-1"
+              >Pick food</label
+            >
+            <select
+              name="food_consumed"
+              class="form-select soft-input"
+              required
+            >
               {% for food in foods %}
               <option value="{{ food.id }}">{{ food.name }}</option>
               {% endfor %}
             </select>
-
-            <select name="meal" class="form-select" style="max-width: 150px">
-              <option value="breakfast">🍳 Breakfast</option>
-              <option value="lunch">🍛 Lunch</option>
-              <option value="dinner">🍽 Dinner</option>
-              <option value="snack">🍎 Snack</option>
-            </select>
-
-            <button class="btn btn-primary">Add</button>
-          </form>
-          {% else %}
-          <p class="text-muted">
-            You cannot add food to past dates. <br />
-          </p>
-          {% endif %}
-
-          <!-- Food Table -->
-          <div class="card">
-            <div class="card-body p-0">
-              <table class="table table-bordered text-center mb-0">
-                <thead class="table-dark">
-                  <tr>
-                    <th>Meal</th>
-                    <th>Food</th>
-                    <th>Cal</th>
-                    <th>Carbs</th>
-                    <th>Protein</th>
-                    <th>Fat</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% if consumed_food %}
-                    {% regroup consumed_food by meal as meal_list %}
-                    {% for meal in meal_list %}
-                    <tr class="table-secondary fw-bold">
-                      <td colspan="7" class="text-start ps-3">🍽 {{ meal.grouper|title }}</td>
-                    </tr>
-
-                    {% for c in meal.list %}
-                    <tr {% if not is_today %} class="table-light text-muted" {% endif %}>
-                      <td></td>
-                      <td>{{ c.food_consumed.name }}</td>
-                      <td>{{ c.food_consumed.calories }}</td>
-                      <td>{{ c.food_consumed.carbs }}</td>
-                      <td>{{ c.food_consumed.protein }}</td>
-                      <td>{{ c.food_consumed.fat }}</td>
-                      <td>
-                        {% if is_today %}
-                          <a href="{% url 'delete_consume' c.id %}" class="btn btn-sm btn-danger">❌</a>
-                        {% else %}
-                          <span class="text-muted">🔒</span>
-                        {% endif %}
-                      </td>
-                    </tr>
-                    {% endfor %}
-                    {% endfor %}
-                  {% else %}
-                  <tr>
-                    <td colspan="7" class="text-center py-4">No food logged 🍎</td>
-                  </tr>
-                  {% endif %}
-                </tbody>
-              </table>
-            </div>
           </div>
+          <div class="col-6 col-lg-3">
+            <label class="form-label text-uppercase small mb-1">Meal</label>
+            <select name="meal" class="form-select soft-input">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+          </div>
+          <div class="col-6 col-lg-auto">
+            <label class="form-label text-uppercase small mb-1 invisible"
+              >Action</label
+            >
+            <button class="btn btn-dark w-100">Add to day</button>
+          </div>
+        </form>
+        {% else %}
+        <div class="alert alert-secondary mt-3 mb-0">
+          Logging is locked for past dates. Pick today to add meals.
         </div>
-      </div>
-    </div>
+        {% endif %}
+      </section>
+
+      <section class="card glass p-0">
+        <div class="table-responsive">
+          <table class="table table-borderless mb-0 align-middle">
+            <thead class="table-head sticky-top">
+              <tr>
+                <th class="text-uppercase small">Meal</th>
+                <th class="text-uppercase small">Food</th>
+                <th class="text-uppercase small text-end">Cal</th>
+                <th class="text-uppercase small text-end">Carbs</th>
+                <th class="text-uppercase small text-end">Protein</th>
+                <th class="text-uppercase small text-end">Fat</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if consumed_food %} {% regroup consumed_food by meal as
+              meal_list %} {% for meal in meal_list %}
+              <tr class="meal-divider">
+                <td colspan="7" class="fw-semibold ps-3 text-muted">
+                  {{ meal.grouper|title }}
+                </td>
+              </tr>
+
+              {% for c in meal.list %}
+              <tr class="{% if not is_today %}row-disabled{% endif %}">
+                <td class="text-capitalize text-muted">{{ meal.grouper }}</td>
+                <td>
+                  <div class="fw-semibold">{{ c.food_consumed.name }}</div>
+                  <div class="text-muted microcopy">
+                    Logged on {{ c.date|date:"M d" }}
+                  </div>
+                </td>
+                <td class="text-end">{{ c.food_consumed.calories }}</td>
+                <td class="text-end">{{ c.food_consumed.carbs }}</td>
+                <td class="text-end">{{ c.food_consumed.protein }}</td>
+                <td class="text-end">{{ c.food_consumed.fat }}</td>
+                <td class="text-end">
+                  {% if is_today %}
+                  <a
+                    href="{% url 'delete_consume' c.id %}"
+                    class="btn btn-sm btn-outline-danger"
+                  >
+                    Remove
+                  </a>
+                  {% else %}
+                  <span class="pill pill-ghost">Locked</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %} {% endfor %} {% else %}
+              <tr>
+                <td colspan="7" class="py-5 text-center text-muted">
+                  No food logged yet. Start by adding breakfast.
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      (function () {
+        const weightInput = document.getElementById("userWeight");
+        const heightInput = document.getElementById("userHeight");
+        const statusEl = document.getElementById("profileStatus");
+        const saveBtn = document.getElementById("saveProfile");
+        const bmiEl = document.getElementById("bmiValue");
+
+        if (!weightInput || !heightInput || !saveBtn) return;
+
+        const storedWeight = localStorage.getItem("ct_weight");
+        const storedHeight = localStorage.getItem("ct_height");
+        if (storedWeight) weightInput.value = storedWeight;
+        if (storedHeight) heightInput.value = storedHeight;
+
+        function updateBMI() {
+          const w = parseFloat(weightInput.value);
+          const h = parseFloat(heightInput.value);
+          if (w > 0 && h > 0) {
+            const bmi = w / Math.pow(h / 100, 2);
+            bmiEl.textContent = bmi.toFixed(1);
+          } else {
+            bmiEl.textContent = "--";
+          }
+        }
+
+        updateBMI();
+        weightInput.addEventListener("input", updateBMI);
+        heightInput.addEventListener("input", updateBMI);
+
+        saveBtn.addEventListener("click", function () {
+          localStorage.setItem("ct_weight", weightInput.value || "");
+          localStorage.setItem("ct_height", heightInput.value || "");
+          statusEl.textContent = "Saved";
+          statusEl.classList.remove("text-muted");
+          updateBMI();
+        });
+      })();
+    </script>
   </body>
 </html>

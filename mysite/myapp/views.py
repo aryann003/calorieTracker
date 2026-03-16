@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from datetime import datetime
 from django.contrib import messages
+from django.contrib.auth import logout
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
 from .models import Consume, Food
 from .forms import FoodForm
 
@@ -96,6 +99,12 @@ def index(request):
     return render(request, 'myapp/index.html', context)
 
 
+def home(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+    return render(request, 'myapp/home.html')
+
+
 @login_required
 def delete_consume(request, consume_id):
     consume = get_object_or_404(Consume, id=consume_id, user=request.user)
@@ -121,3 +130,24 @@ def add_food(request):
         form = FoodForm()
 
     return render(request, 'myapp/add_food.html', {'form': form})
+
+
+@login_required
+def logout_view(request):
+    """Log out the current user and send them to the homepage."""
+    logout(request)
+    return redirect('home')
+
+
+def register(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('index')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
