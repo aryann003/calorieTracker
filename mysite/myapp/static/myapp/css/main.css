@@ -86,6 +86,21 @@ body {
   border-color: rgba(15, 23, 42, 0.08);
 }
 
+.avatar-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(135deg, #5d6bff, #2f9e8b);
+  box-shadow: 0 12px 28px rgba(93, 107, 255, 0.25);
+  flex-shrink: 0;
+}
+
 .date-form input {
   min-width: 160px;
 }
@@ -263,106 +278,96 @@ body {
   }
 }
 
-/* Dark theme tuned for food tracker */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #e9edf8;
-    --muted: #9fb0c8;
-    --card: #101623;
-    --surface: rgba(22, 30, 44, 0.7);
-    --border: #1e2637;
-    --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  }
+/* Dark theme toggle */
+body.theme-dark {
+  --ink: #e9edf8;
+  --muted: #9fb0c8;
+  --card: #101623;
+  --surface: rgba(22, 30, 44, 0.7);
+  --border: #1e2637;
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  background: radial-gradient(120% 120% at 10% 10%, #0c1220 0, #0a111d 40%, #0a0f1b 100%);
+}
 
-  body {
-    background: radial-gradient(120% 120% at 10% 10%, #0c1220 0, #0a111d 40%, #0a0f1b 100%);
-  }
+body.theme-dark .background-blur {
+  background: radial-gradient(600px at 20% 20%, rgba(93, 107, 255, 0.16), transparent 55%),
+    radial-gradient(500px at 80% 0%, rgba(47, 158, 139, 0.12), transparent 55%);
+  filter: blur(70px);
+}
 
-  .background-blur {
-    background: radial-gradient(600px at 20% 20%, rgba(93, 107, 255, 0.16), transparent 55%),
-      radial-gradient(500px at 80% 0%, rgba(47, 158, 139, 0.12), transparent 55%);
-    filter: blur(70px);
-  }
+body.theme-dark .glass,
+body.theme-dark .card,
+body.theme-dark .metric-card,
+body.theme-dark .alert {
+  background: var(--card);
+  color: var(--ink);
+  border-color: var(--border);
+}
 
-  .glass,
-  .card,
-  .metric-card,
-  .alert {
-    background: var(--card);
-    color: var(--ink);
-    border-color: var(--border);
-  }
+body.theme-dark .metric-card {
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+}
 
-  .metric-card {
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
-  }
+body.theme-dark .soft-input,
+body.theme-dark .form-control,
+body.theme-dark .form-select {
+  background: #111827;
+  color: var(--ink);
+  border-color: var(--border);
+}
 
-  .soft-input,
-  .form-control,
-  .form-select {
-    background: #111827;
-    color: var(--ink);
-    border-color: var(--border);
-  }
+body.theme-dark .table-head {
+  background: #0b1221;
+  color: #dfe6ff;
+}
 
-  .table-head {
-    background: #0b1221;
-    color: #dfe6ff;
-  }
+body.theme-dark .table tbody tr,
+body.theme-dark .table td,
+body.theme-dark .table th {
+  color: var(--ink);
+}
 
-  .table tbody tr,
-  .table td,
-  .table th {
-    color: var(--ink);
-  }
+body.theme-dark .table tbody tr {
+  border-color: #1c2538;
+}
 
-  .table tbody tr {
-    border-color: #1c2538;
-  }
+body.theme-dark .table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
 
-  .table tbody tr:hover {
-    background: rgba(255, 255, 255, 0.03);
-  }
+body.theme-dark .meal-divider {
+  background: rgba(255, 255, 255, 0.04);
+  color: #c8d4ec;
+}
 
-  .meal-divider {
-    background: rgba(255, 255, 255, 0.04);
-    color: #c8d4ec;
-  }
+body.theme-dark .pill-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  border-color: rgba(255, 255, 255, 0.08);
+}
 
-  .pill-ghost {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--ink);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
+body.theme-dark .text-muted,
+body.theme-dark .small,
+body.theme-dark .microcopy {
+  color: #9fb0c8 !important;
+}
 
-  .text-muted,
-  .small,
-  .microcopy {
-    color: #9fb0c8 !important;
-  }
+body.theme-dark .btn-outline-primary {
+  border-color: rgba(93, 107, 255, 0.6);
+  color: #b7c2ff;
+}
 
-  .btn-outline-primary {
-    border-color: rgba(93, 107, 255, 0.6);
-    color: #b7c2ff;
-  }
+body.theme-dark .btn-outline-danger {
+  border-color: #ef476f;
+  color: #ff92ae;
+}
 
-  .btn-outline-danger {
-    border-color: #ef476f;
-    color: #ff92ae;
-  }
+body.theme-dark .btn-dark {
+  background: linear-gradient(120deg, #0d1423, #18243a);
+}
 
-  .btn-dark {
-    background: linear-gradient(120deg, #0d1423, #18243a);
-  }
-
-  .btn-outline-primary,
-  .btn-outline-danger {
-    color: var(--ink);
-  }
-
-  .alert-secondary {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--ink);
-    border-color: var(--border);
-  }
+body.theme-dark .alert-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  border-color: var(--border);
 }

@@ -28,7 +28,7 @@ def index(request):
     # ✅ ADD FOOD (POST)
     today = now().date()
     is_today = selected_date == today
-    if request.method == 'POST':
+    if request.method == 'POST' and request.POST.get('action') == 'add_food':
         food_id = request.POST.get('food_consumed')
         food = get_object_or_404(Food, id=food_id)
         meal = request.POST.get('meal')
@@ -41,6 +41,30 @@ def index(request):
         )
 
         return redirect(f"/?date={selected_date}")
+
+    # HANDLE GOAL UPDATE FORM (weight + journey)
+    goal_weight = request.session.get('goal_weight')
+    goal_height = request.session.get('goal_height')
+    goal_type = request.session.get('goal_type', 'maintain')  # maintain | loss | gain
+    if request.method == 'POST' and request.POST.get('action') == 'set_goals':
+        weight_str = request.POST.get('goal_weight')
+        height_str = request.POST.get('goal_height')
+        goal_type = request.POST.get('goal_type') or 'maintain'
+        try:
+            goal_weight = float(weight_str) if weight_str else None
+        except ValueError:
+            goal_weight = None
+        try:
+            goal_height = float(height_str) if height_str else None
+        except ValueError:
+            goal_height = None
+        if not goal_weight or not goal_height:
+            messages.error(request, "Please enter a valid weight and height to update goals.")
+            return redirect('index')
+        request.session['goal_weight'] = goal_weight
+        request.session['goal_height'] = goal_height
+        request.session['goal_type'] = goal_type
+        return redirect('index')
 
     # FETCH CONSUMED FOOD
     consumed_food = Consume.objects.filter(
@@ -56,12 +80,49 @@ def index(request):
     )
 
    
+    # GOALS (derived from weight + journey; fallback defaults)
+    def compute_goals(weight, height_cm, journey):
+        """
+        Estimate TDEE using a simplified Mifflin-St Jeor (assumes age 30, light activity 1.4).
+        Then adjust +-400 kcal for loss/gain.
+        """
+        if weight and height_cm:
+            age = 30  # fallback assumption
+            bmr = 10 * weight + 6.25 * height_cm - 5 * age + 5  # male default
+            tdee = bmr * 1.4  # light activity multiplier
+            if journey == 'loss':
+                calorie_goal = tdee - 400
+            elif journey == 'gain':
+                calorie_goal = tdee + 400
+            else:
+                calorie_goal = tdee
+            # macros: 30% protein, 30% fat, 40% carbs (by kcal)
+            protein_goal = round((calorie_goal * 0.30) / 4, 1)
+            fat_goal = round((calorie_goal * 0.30) / 9, 1)
+            carb_goal = round((calorie_goal * 0.40) / 4, 1)
+        elif weight:
+            # fallback to weight-only heuristic
+            if journey == 'loss':
+                calorie_goal = weight * 25
+            elif journey == 'gain':
+                calorie_goal = weight * 35
+            else:
+                calorie_goal = weight * 30
+            protein_goal = round(weight * 1.8, 1)
+            fat_goal = round(calorie_goal * 0.25 / 9, 1)
+            carb_goal = round((calorie_goal - (protein_goal * 4) - (fat_goal * 9)) / 4, 1)
+        else:
+            calorie_goal = 2600
+            carb_goal = 300
+            protein_goal = 150
+            fat_goal = 70
+        return round(calorie_goal), round(carb_goal), round(protein_goal), round(fat_goal)
 
-    # GOALS
-    CALORIE_GOAL = 2600
-    CARBS_GOAL = 300
-    PROTEIN_GOAL = 150
-    FAT_GOAL = 70
+    CALORIE_GOAL, CARBS_GOAL, PROTEIN_GOAL, FAT_GOAL = compute_goals(goal_weight, goal_height, goal_type)
+
+    bmi_value = None
+    if goal_weight and goal_height and goal_height > 0:
+        bmi_value = round(goal_weight / ((goal_height / 100) ** 2), 1)
 
     remaining_calories = CALORIE_GOAL - (totals['total_calories'] or 0)
     status = "under" if remaining_calories >= 0 else "over"
@@ -76,6 +137,10 @@ def index(request):
         'foods': foods,
         'consumed_food': consumed_food,
         'selected_date': selected_date,
+        'goal_weight': goal_weight or '',
+        'goal_height': goal_height or '',
+        'goal_type': goal_type,
+        'bmi_value': bmi_value,
 
         'total_calories': totals['total_calories'] or 0,
         'total_carbs': totals['total_carbs'] or 0,

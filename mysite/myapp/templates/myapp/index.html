@@ -71,15 +71,21 @@
 
         <div class="collapse show mb-3" id="profileCard">
           <div class="card glass p-4 profile-card">
+            {% with request.user.get_full_name|default:request.user.username as display_name %}
             <div
               class="d-flex flex-wrap justify-content-between align-items-center mb-3"
             >
-              <div>
-                <p class="eyebrow mb-1">Profile</p>
-                <h5 class="mb-1">
-                  {{ request.user.get_full_name|default:request.user.username }}
-                </h5>
-                <span class="microcopy text-muted"></span>
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-badge">
+                  {{ display_name|slice:":1"|upper }}
+                </div>
+                <div>
+                  <p class="eyebrow mb-1">Profile</p>
+                  <h5 class="mb-1">
+                    {{ display_name }}
+                  </h5>
+                  <span class="microcopy text-muted"></span>
+                </div>
               </div>
               <div class="d-flex align-items-center gap-2">
                 <a
@@ -97,6 +103,14 @@
                   class="btn btn-outline-secondary btn-sm"
                   >Home</a
                 >
+                <div class="btn-group" role="group" aria-label="Theme toggle">
+                  <button type="button" class="btn btn-outline-primary btn-sm" data-theme-toggle="light">
+                    Light
+                  </button>
+                  <button type="button" class="btn btn-outline-primary btn-sm" data-theme-toggle="dark">
+                    Dark
+                  </button>
+                </div>
                 <button
                   class="btn btn-outline-primary profile-toggle btn-sm"
                   type="button"
@@ -109,41 +123,74 @@
                 </button>
               </div>
             </div>
+            {% endwith %}
             <div class="row g-3">
               <div class="col-12 col-md-6">
-                <label class="form-label text-uppercase small mb-1"
-                  >Weight (kg)</label
-                >
-                <input
-                  type="number"
-                  min="1"
-                  step="0.1"
-                  id="userWeight"
-                  class="form-control soft-input"
-                  placeholder="e.g. 68.5"
-                />
+                <form method="POST" action="{% url 'index' %}" class="row g-2 align-items-end">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="set_goals" />
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label text-uppercase small mb-1"
+                      >Weight (kg)</label
+                    >
+                    <input
+                      type="number"
+                      name="goal_weight"
+                      min="1"
+                      step="0.1"
+                      id="userWeight"
+                      class="form-control soft-input"
+                      placeholder="e.g. 68.5"
+                      required
+                      value="{{ goal_weight }}"
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label text-uppercase small mb-1"
+                      >Height (cm)</label
+                    >
+                    <input
+                      type="number"
+                      name="goal_height"
+                      min="50"
+                      step="0.5"
+                      id="userHeight"
+                      class="form-control soft-input"
+                      placeholder="e.g. 172"
+                      required
+                      value="{{ goal_height }}"
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label text-uppercase small mb-1"
+                      >Journey</label
+                    >
+                    <select
+                      class="form-select soft-input"
+                      name="goal_type"
+                      aria-label="Goal type"
+                    >
+                      <option value="maintain" {% if goal_type == "maintain" %}selected{% endif %}>Maintain</option>
+                      <option value="loss" {% if goal_type == "loss" %}selected{% endif %}>Lose weight</option>
+                      <option value="gain" {% if goal_type == "gain" %}selected{% endif %}>Gain weight</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <button class="btn btn-dark w-100">Update goals</button>
+                  </div>
+                </form>
               </div>
               <div class="col-12 col-md-6">
-                <label class="form-label text-uppercase small mb-1"
-                  >Height (cm)</label
-                >
-                <input
-                  type="number"
-                  min="50"
-                  step="0.5"
-                  id="userHeight"
-                  class="form-control soft-input"
-                  placeholder="e.g. 172"
-                />
+                <div class="d-flex align-items-baseline gap-2">
+                  <span class="eyebrow mb-0">BMI</span>
+                  <span class="fw-semibold" id="bmiValue">
+                    {% if bmi_value %}{{ bmi_value }}{% else %}--{% endif %}
+                  </span>
+                </div>
+                <p class="microcopy text-muted mb-0">
+                  Based on weight/height you enter above.
+                </p>
               </div>
-            </div>
-            <div class="d-flex flex-wrap gap-3 mt-3 align-items-center">
-              <div class="d-flex align-items-baseline gap-2">
-                <span class="eyebrow mb-0">BMI</span>
-                <span class="fw-semibold" id="bmiValue">--</span>
-              </div>
-              <button class="btn btn-dark" id="saveProfile">Save</button>
-              <span class="microcopy text-muted" id="profileStatus"></span>
             </div>
           </div>
         </div>
@@ -238,6 +285,7 @@
         {% if is_today %}
         <form method="POST" class="row g-2 align-items-center mt-3">
           {% csrf_token %}
+          <input type="hidden" name="action" value="add_food" />
           <div class="col-12 col-lg">
             <label class="form-label text-uppercase small mb-1"
               >Pick food</label
@@ -290,8 +338,9 @@
               </tr>
             </thead>
             <tbody>
-              {% if consumed_food %} {% regroup consumed_food by meal as
-              meal_list %} {% for meal in meal_list %}
+              {% if consumed_food %}
+              {% regroup consumed_food by meal as meal_list %}
+              {% for meal in meal_list %}
               <tr class="meal-divider">
                 <td colspan="7" class="fw-semibold ps-3 text-muted">
                   {{ meal.grouper|title }}
@@ -324,7 +373,9 @@
                   {% endif %}
                 </td>
               </tr>
-              {% endfor %} {% endfor %} {% else %}
+              {% endfor %}
+              {% endfor %}
+              {% else %}
               <tr>
                 <td colspan="7" class="py-5 text-center text-muted">
                   No food logged yet. Start by adding breakfast.
@@ -344,6 +395,20 @@
         const statusEl = document.getElementById("profileStatus");
         const saveBtn = document.getElementById("saveProfile");
         const bmiEl = document.getElementById("bmiValue");
+        const themeButtons = document.querySelectorAll("[data-theme-toggle]");
+        const body = document.body;
+
+        // THEME
+        function applyTheme(theme) {
+          body.classList.remove("theme-light", "theme-dark");
+          body.classList.add(theme === "dark" ? "theme-dark" : "theme-light");
+          localStorage.setItem("ct_theme", theme);
+        }
+        const storedTheme = localStorage.getItem("ct_theme");
+        applyTheme(storedTheme || "dark"); // default dark to match current styling
+        themeButtons.forEach((btn) => {
+          btn.addEventListener("click", () => applyTheme(btn.dataset.themeToggle));
+        });
 
         if (!weightInput || !heightInput || !saveBtn) return;
 
