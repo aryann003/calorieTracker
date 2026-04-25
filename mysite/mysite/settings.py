@@ -4,6 +4,8 @@ Django settings for mysite project.
 
 from pathlib import Path
 import os
+from urllib.parse import urlparse
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -102,6 +104,22 @@ mysql_user = os.getenv('MYSQLUSER') or os.getenv('MYSQL_USER', 'root')
 mysql_password = os.getenv('MYSQLPASSWORD') or os.getenv('MYSQL_ROOT_PASSWORD', '')
 mysql_host = os.getenv('MYSQLHOST') or os.getenv('MYSQL_HOST')
 mysql_port = os.getenv('MYSQLPORT') or os.getenv('MYSQL_PORT', '3306')
+on_managed_prod = bool(os.getenv("VERCEL") or os.getenv("RENDER"))
+mysql_url = os.getenv("MYSQL_URL")
+
+if mysql_url:
+    parsed = urlparse(mysql_url)
+    if parsed.scheme.startswith("mysql"):
+        if parsed.hostname:
+            mysql_host = parsed.hostname
+        if parsed.port:
+            mysql_port = str(parsed.port)
+        if parsed.username:
+            mysql_user = parsed.username
+        if parsed.password:
+            mysql_password = parsed.password
+        if parsed.path and parsed.path != "/":
+            mysql_name = parsed.path.lstrip("/")
 
 if mysql_host and mysql_host != 'your-host':
     DATABASES = {
@@ -115,6 +133,11 @@ if mysql_host and mysql_host != 'your-host':
         }
     }
 else:
+    if on_managed_prod:
+        raise ImproperlyConfigured(
+            "MySQL is required in production. Set MYSQLHOST, MYSQLPORT, "
+            "MYSQLDATABASE, MYSQLUSER, and MYSQLPASSWORD."
+        )
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
