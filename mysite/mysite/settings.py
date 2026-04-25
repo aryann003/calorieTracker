@@ -8,6 +8,21 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def env_bool(key, default=False):
+    value = os.getenv(key)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_list(key, default=None):
+    raw = os.getenv(key, "")
+    values = [item.strip() for item in raw.split(",") if item.strip()]
+    if values:
+        return values
+    return default or []
+
+
 def load_env_file(path):
     if not path.exists():
         return
@@ -28,8 +43,9 @@ SECRET_KEY = os.getenv(
     "django-insecure-q2&&w(8tc=vi&grb#fhbyz*afqxu^mv+-b9z8e&+*&*7!kf(ou"
 )
 
-DEBUG = False
-ALLOWED_HOSTS = ["*"]
+DEBUG = env_bool("DEBUG", default=False)
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", ".vercel.app", ".onrender.com"])
+CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
 
 # APPS
@@ -131,7 +147,7 @@ USE_TZ = True
 
 
 # STATIC FILES
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
