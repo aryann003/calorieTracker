@@ -4,8 +4,9 @@ Django settings for mysite project.
 
 from pathlib import Path
 import os
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 from django.core.exceptions import ImproperlyConfigured
+import certifi
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -105,7 +106,7 @@ mysql_password = os.getenv('MYSQLPASSWORD') or os.getenv('MYSQL_ROOT_PASSWORD', 
 mysql_host = os.getenv('MYSQLHOST') or os.getenv('MYSQL_HOST')
 mysql_port = os.getenv('MYSQLPORT') or os.getenv('MYSQL_PORT', '3306')
 on_managed_prod = bool(os.getenv("VERCEL") or os.getenv("RENDER"))
-mysql_url = os.getenv("MYSQL_URL")
+mysql_url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
 
 if mysql_url:
     parsed = urlparse(mysql_url)
@@ -115,13 +116,33 @@ if mysql_url:
         if parsed.port:
             mysql_port = str(parsed.port)
         if parsed.username:
-            mysql_user = parsed.username
+            mysql_user = unquote(parsed.username)
         if parsed.password:
-            mysql_password = parsed.password
+            mysql_password = unquote(parsed.password)
         if parsed.path and parsed.path != "/":
             mysql_name = parsed.path.lstrip("/")
+        mysql_query = parse_qs(parsed.query or "")
+        # Support common URL params like ?ssl-mode=DISABLED / ?sslmode=disable.
+        url_ssl_mode = (
+            (mysql_query.get("ssl-mode", [None])[0])
+            or (mysql_query.get("sslmode", [None])[0])
+        )
+        if url_ssl_mode and not os.getenv("MYSQL_SSL_MODE"):
+            os.environ["MYSQL_SSL_MODE"] = str(url_ssl_mode)
 
 if mysql_host and mysql_host != 'your-host':
+    db_options = {
+        "connect_timeout": int(os.getenv("MYSQL_CONNECT_TIMEOUT", "15")),
+        "read_timeout": int(os.getenv("MYSQL_READ_TIMEOUT", "30")),
+        "write_timeout": int(os.getenv("MYSQL_WRITE_TIMEOUT", "30")),
+        "charset": "utf8mb4",
+    }
+
+    # Railway/Vercel-hosted MySQL often requires SSL over public proxy hosts.
+    mysql_ssl_mode = os.getenv("MYSQL_SSL_MODE", "required").strip().lower()
+    if mysql_ssl_mode not in {"disabled", "off", "false", "0"}:
+        db_options["ssl"] = {"ca": os.getenv("MYSQL_SSL_CA", certifi.where())}
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -130,6 +151,9 @@ if mysql_host and mysql_host != 'your-host':
             'PASSWORD': mysql_password,
             'HOST': mysql_host,
             'PORT': mysql_port,
+            'CONN_MAX_AGE': int(os.getenv("DB_CONN_MAX_AGE", "60")),
+            'CONN_HEALTH_CHECKS': env_bool("DB_CONN_HEALTH_CHECKS", default=True),
+            'OPTIONS': db_options,
         }
     }
 else:
