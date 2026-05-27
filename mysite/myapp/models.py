@@ -7,6 +7,7 @@ class Food(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        db_constraint=False,
         null=True,
         blank=True
     )
