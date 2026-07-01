@@ -39,6 +39,8 @@ def load_env_file(path):
 
 load_env_file(BASE_DIR / "mysite" / ".env")
 
+on_managed_prod = bool(os.getenv("VERCEL") or os.getenv("RENDER"))
+
 
 # SECURITY
 SECRET_KEY = os.getenv(
@@ -46,6 +48,7 @@ SECRET_KEY = os.getenv(
     "django-insecure-q2&&w(8tc=vi&grb#fhbyz*afqxu^mv+-b9z8e&+*&*7!kf(ou"
 )
 
+DEBUG = env_bool("DEBUG", default=not on_managed_prod)
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", ".vercel.app", ".onrender.com"])
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
@@ -104,11 +107,8 @@ mysql_user = os.getenv('MYSQLUSER') or os.getenv('MYSQL_USER', 'root')
 mysql_password = os.getenv('MYSQLPASSWORD') or os.getenv('MYSQL_ROOT_PASSWORD', '')
 mysql_host = os.getenv('MYSQLHOST') or os.getenv('MYSQL_HOST')
 mysql_port = os.getenv('MYSQLPORT') or os.getenv('MYSQL_PORT', '3306')
-on_managed_prod = bool(os.getenv("VERCEL") or os.getenv("RENDER"))
 USE_SQLITE = env_bool("USE_SQLITE", default=not on_managed_prod)
 mysql_url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
-
-DEBUG = env_bool("DEBUG", default=not on_managed_prod)
 
 if mysql_url:
     parsed = urlparse(mysql_url)
@@ -147,8 +147,9 @@ elif mysql_host and mysql_host != 'your-host':
         "charset": "utf8mb4",
     }
 
-    # Railway/Vercel-hosted MySQL often requires SSL over public proxy hosts.
-    mysql_ssl_mode = os.getenv("MYSQL_SSL_MODE", "required").strip().lower()
+    # Railway's public MySQL proxy may drop SSL handshakes; enable SSL explicitly
+    # with MYSQL_SSL_MODE=required when your provider supports it.
+    mysql_ssl_mode = os.getenv("MYSQL_SSL_MODE", "disabled").strip().lower()
     if mysql_ssl_mode not in {"disabled", "off", "false", "0"}:
         db_options["ssl"] = {"ca": os.getenv("MYSQL_SSL_CA", certifi.where())}
 

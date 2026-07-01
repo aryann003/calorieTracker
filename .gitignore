@@ -4,17 +4,17 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Virtual environments
+# Virtual environment
 venv/
 .venv/
 env/
 
-# Django local database and local files
+# Django local database and files
 *.sqlite3
 db.sqlite3
 testwrite.txt
 
-# Environment variables / secrets
+# Environment variables
 .env
 *.env
 
@@ -30,7 +30,7 @@ media/
 # Logs
 *.log
 
-# Temporary files
+# Temporary folders
 .tmp/
 piptemp*/
 pip-temp*/
