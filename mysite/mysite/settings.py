@@ -46,7 +46,6 @@ SECRET_KEY = os.getenv(
     "django-insecure-q2&&w(8tc=vi&grb#fhbyz*afqxu^mv+-b9z8e&+*&*7!kf(ou"
 )
 
-DEBUG = env_bool("DEBUG", default=False)
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", ".vercel.app", ".onrender.com"])
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
 
@@ -106,7 +105,10 @@ mysql_password = os.getenv('MYSQLPASSWORD') or os.getenv('MYSQL_ROOT_PASSWORD', 
 mysql_host = os.getenv('MYSQLHOST') or os.getenv('MYSQL_HOST')
 mysql_port = os.getenv('MYSQLPORT') or os.getenv('MYSQL_PORT', '3306')
 on_managed_prod = bool(os.getenv("VERCEL") or os.getenv("RENDER"))
+USE_SQLITE = env_bool("USE_SQLITE", default=not on_managed_prod)
 mysql_url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
+
+DEBUG = env_bool("DEBUG", default=not on_managed_prod)
 
 if mysql_url:
     parsed = urlparse(mysql_url)
@@ -130,7 +132,14 @@ if mysql_url:
         if url_ssl_mode and not os.getenv("MYSQL_SSL_MODE"):
             os.environ["MYSQL_SSL_MODE"] = str(url_ssl_mode)
 
-if mysql_host and mysql_host != 'your-host':
+if USE_SQLITE and not on_managed_prod:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+elif mysql_host and mysql_host != 'your-host':
     db_options = {
         "connect_timeout": int(os.getenv("MYSQL_CONNECT_TIMEOUT", "15")),
         "read_timeout": int(os.getenv("MYSQL_READ_TIMEOUT", "30")),
@@ -210,4 +219,3 @@ WHITENOISE_USE_FINDERS = True
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
-

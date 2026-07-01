@@ -1,0 +1,37 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Django local database and local files
+*.sqlite3
+db.sqlite3
+testwrite.txt
+
+# Environment variables / secrets
+.env
+*.env
+
+# Static and media
+staticfiles/
+media/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+.tmp/
+piptemp*/
+pip-temp*/
+piptemp2/
