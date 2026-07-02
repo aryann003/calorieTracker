@@ -35,3 +35,7 @@ media/
 piptemp*/
 pip-temp*/
 piptemp2/
+
+
+# Power BI generated exports
+mysite/powerbi_exports/
