@@ -4,19 +4,23 @@
   <head>
     <meta charset="UTF-8" />
     <title>Calorie Tracker</title>
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <link rel="stylesheet" href="{% static 'myapp/css/main.css' %}" />
   </head>
 
   <body>
     <div class="background-blur"></div>
+
     <main class="page-wrapper container-xxl py-5">
       <header class="hero card glass mb-4">
         <div
@@ -25,18 +29,21 @@
           <div>
             <p class="eyebrow mb-1">Daily balance</p>
             <h1 class="display-6 mb-2">Calorie Tracker</h1>
+
             <div class="d-flex align-items-center gap-3 flex-wrap">
               {% if status == "under" %}
               <span class="pill pill-good">On track</span>
               {% else %}
               <span class="pill pill-warn">Over goal</span>
               {% endif %}
-              <span class="pill pill-ghost"
-                >Remaining {{ remaining_calories }} kcal</span
-              >
-              <span class="pill pill-ghost"
-                >Date: {{ selected_date|date:"M d, Y" }}</span
-              >
+
+              <span class="pill pill-ghost">
+                Remaining {{ remaining_calories }} kcal
+              </span>
+
+              <span class="pill pill-ghost">
+                Date: {{ selected_date|date:"M d, Y" }}
+              </span>
             </div>
           </div>
 
@@ -45,17 +52,20 @@
               method="GET"
               class="date-form d-flex flex-wrap align-items-center gap-2"
             >
-              <label class="small text-uppercase fw-bold opacity-75"
-                >Jump to</label
-              >
+              <label class="small text-uppercase fw-bold opacity-75">
+                Jump to
+              </label>
+
               <input
                 type="date"
                 name="date"
                 value="{{ selected_date|date:'Y-m-d' }}"
                 class="form-control"
               />
+
               <button class="btn btn-dark shadow-sm">Go</button>
             </form>
+
             <button
               class="btn btn-outline-primary profile-toggle"
               type="button"
@@ -69,48 +79,96 @@
           </div>
         </div>
 
-        <div class="collapse show mb-3" id="profileCard">
+        {% if messages %}
+        <div class="mt-3">
+          {% for message in messages %}
+          <div class="alert alert-info mb-2">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="collapse show mb-3 mt-4" id="profileCard">
           <div class="card glass p-4 profile-card">
-            {% with request.user.get_full_name|default:request.user.username as display_name %}
             <div
               class="d-flex flex-wrap justify-content-between align-items-center mb-3"
             >
               <div class="d-flex align-items-center gap-3">
                 <div class="avatar-badge">
-                  {{ display_name|slice:":1"|upper }}
+                  {{ request.user.username|slice:":1"|upper }}
                 </div>
+
                 <div>
                   <p class="eyebrow mb-1">Profile</p>
-                  <h5 class="mb-1">
-                    {{ display_name }}
-                  </h5>
-                  <span class="microcopy text-muted"></span>
+
+                  <h5 class="mb-1">{{ request.user.username }}</h5>
+
+                  {% if profile %}
+                  <span class="microcopy text-muted">
+                    Goal: {{ profile.get_goal_type_display }} | Activity: {{
+                    profile.get_activity_level_display }}
+                  </span>
+                  {% else %}
+                  <span class="microcopy text-muted">
+                    Complete your profile to calculate personal goals.
+                  </span>
+                  {% endif %}
                 </div>
               </div>
-              <div class="d-flex align-items-center gap-2">
+
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a
+                  href="{% url 'profile' %}"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  Edit profile
+                </a>
+
+                <a
+                  href="{% url 'weight_log' %}"
+                  class="btn btn-outline-primary btn-sm"
+                >
+                  Weight log
+                </a>
+
                 <a
                   href="{% url 'password_change' %}"
                   class="btn btn-outline-primary btn-sm"
-                  >Change password</a
                 >
+                  Change password
+                </a>
+
                 <a
                   href="{% url 'logout' %}"
                   class="btn btn-outline-danger btn-sm"
-                  >Log out</a
                 >
+                  Log out
+                </a>
+
                 <a
                   href="{% url 'home' %}"
                   class="btn btn-outline-secondary btn-sm"
-                  >Home</a
                 >
+                  Home
+                </a>
+
                 <div class="btn-group" role="group" aria-label="Theme toggle">
-                  <button type="button" class="btn btn-outline-primary btn-sm" data-theme-toggle="light">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    data-theme-toggle="light"
+                  >
                     Light
                   </button>
-                  <button type="button" class="btn btn-outline-primary btn-sm" data-theme-toggle="dark">
+
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    data-theme-toggle="dark"
+                  >
                     Dark
                   </button>
                 </div>
+
                 <button
                   class="btn btn-outline-primary profile-toggle btn-sm"
                   type="button"
@@ -123,73 +181,51 @@
                 </button>
               </div>
             </div>
-            {% endwith %}
+
             <div class="row g-3">
-              <div class="col-12 col-md-6">
-                <form method="POST" action="{% url 'index' %}" class="row g-2 align-items-end">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="set_goals" />
-                  <div class="col-12 col-sm-6">
-                    <label class="form-label text-uppercase small mb-1"
-                      >Weight (kg)</label
-                    >
-                    <input
-                      type="number"
-                      name="goal_weight"
-                      min="1"
-                      step="0.1"
-                      id="userWeight"
-                      class="form-control soft-input"
-                      placeholder="e.g. 68.5"
-                      required
-                      value="{{ goal_weight }}"
-                    />
+              <div class="col-12 col-md-3">
+                <div class="metric-card">
+                  <div class="metric-label">BMI</div>
+
+                  <div class="metric-value">{{ bmi_value|default:"--" }}</div>
+
+                  <div class="metric-meta">
+                    {{ bmi_category|default:"Add profile details" }}
                   </div>
-                  <div class="col-12 col-sm-6">
-                    <label class="form-label text-uppercase small mb-1"
-                      >Height (cm)</label
-                    >
-                    <input
-                      type="number"
-                      name="goal_height"
-                      min="50"
-                      step="0.5"
-                      id="userHeight"
-                      class="form-control soft-input"
-                      placeholder="e.g. 172"
-                      required
-                      value="{{ goal_height }}"
-                    />
-                  </div>
-                  <div class="col-12 col-sm-6">
-                    <label class="form-label text-uppercase small mb-1"
-                      >Journey</label
-                    >
-                    <select
-                      class="form-select soft-input"
-                      name="goal_type"
-                      aria-label="Goal type"
-                    >
-                      <option value="maintain" {% if goal_type == "maintain" %}selected{% endif %}>Maintain</option>
-                      <option value="loss" {% if goal_type == "loss" %}selected{% endif %}>Lose weight</option>
-                      <option value="gain" {% if goal_type == "gain" %}selected{% endif %}>Gain weight</option>
-                    </select>
-                  </div>
-                  <div class="col-12">
-                    <button class="btn btn-dark w-100">Update goals</button>
-                  </div>
-                </form>
-              </div>
-              <div class="col-12 col-md-6">
-                <div class="d-flex align-items-baseline gap-2">
-                  <span class="eyebrow mb-0">BMI</span>
-                  <span class="fw-semibold" id="bmiValue">
-                    {% if bmi_value %}{{ bmi_value }}{% else %}--{% endif %}
-                  </span>
                 </div>
-                <p class="microcopy text-muted mb-0">
-                  Based on weight/height you enter above.
-                </p>
+              </div>
+
+              <div class="col-12 col-md-3">
+                <div class="metric-card">
+                  <div class="metric-label">BMR</div>
+
+                  <div class="metric-value">{{ bmr_value|default:"--" }}</div>
+
+                  <div class="metric-meta">Base calories</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-3">
+                <div class="metric-card">
+                  <div class="metric-label">TDEE</div>
+
+                  <div class="metric-value">{{ tdee_value|default:"--" }}</div>
+
+                  <div class="metric-meta">Activity-adjusted target</div>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-3">
+                <div class="metric-card">
+                  <div class="metric-label">Current Weight</div>
+
+                  <div class="metric-value">
+                    {% if profile.current_weight_kg %}
+                    {{profile.current_weight_kg }} kg {% else %} -- {% endif %}
+                  </div>
+
+                  <div class="metric-meta">Latest profile weight</div>
+                </div>
               </div>
             </div>
           </div>
@@ -199,60 +235,74 @@
           <div class="col-12 col-md-6 col-xl-3">
             <div class="metric-card">
               <div class="metric-label">Calories</div>
+
               <div class="metric-value">
-                {{ total_calories }}<span class="metric-suffix"
-                  >/{{ CALORIE_GOAL }}</span
-                >
+                {{ total_calories }}
+                <span class="metric-suffix">/{{ CALORIE_GOAL }}</span>
               </div>
+
               <div class="progress progress-thick">
                 <div
                   class="progress-bar progress-calories"
                   style="width: {{ calPercent }}%"
                 ></div>
               </div>
-              <div class="metric-meta">Daily burn target</div>
+
+              <div class="metric-meta">Daily calorie target</div>
             </div>
           </div>
+
           <div class="col-12 col-md-6 col-xl-3">
             <div class="metric-card">
               <div class="metric-label">Carbs</div>
+
               <div class="metric-value">{{ total_carbs }}g</div>
+
               <div class="progress progress-thick">
                 <div
                   class="progress-bar progress-carbs"
                   style="width: {{ carbPercent }}%"
                 ></div>
               </div>
+
               <div class="metric-meta">
                 {{ carbPercent|floatformat:1 }}% of {{ CARBS_GOAL }}g goal
               </div>
             </div>
           </div>
+
           <div class="col-12 col-md-6 col-xl-3">
             <div class="metric-card">
               <div class="metric-label">Protein</div>
+
               <div class="metric-value">{{ total_protein }}g</div>
+
               <div class="progress progress-thick">
                 <div
                   class="progress-bar progress-protein"
                   style="width: {{ proteinPercent }}%"
                 ></div>
               </div>
+
               <div class="metric-meta">
                 {{ proteinPercent|floatformat:1 }}% of {{ PROTEIN_GOAL }}g goal
               </div>
             </div>
           </div>
+
           <div class="col-12 col-md-6 col-xl-3">
             <div class="metric-card">
               <div class="metric-label">Fat</div>
+
               <div class="metric-value">{{ total_fat }}g</div>
+
               <div class="progress progress-thick">
                 <div
                   class="progress-bar progress-fat"
                   style="width: {{ fatPercent }}%"
                 ></div>
               </div>
+
               <div class="metric-meta">
                 {{ fatPercent|floatformat:1 }}% of {{ FAT_GOAL }}g goal
               </div>
@@ -267,52 +317,79 @@
         >
           <div>
             <p class="eyebrow mb-1">Log food</p>
+
             <h4 class="mb-0">Quick add for {{ selected_date|date:"M d" }}</h4>
+
             {% if not is_today %}
-            <small class="text-muted"
-              >Adding is only available for today.</small
-            >
+            <small class="text-muted">
+              Adding is only available for today.
+            </small>
             {% endif %}
           </div>
 
           <div class="d-flex flex-wrap gap-2">
-            <a href="{% url 'add_food' %}" class="btn btn-outline-primary"
-              >Create food</a
-            >
+            <a href="{% url 'add_food' %}" class="btn btn-outline-primary">
+              Create food
+            </a>
           </div>
         </div>
 
         {% if is_today %}
         <form method="POST" class="row g-2 align-items-center mt-3">
           {% csrf_token %}
+
           <input type="hidden" name="action" value="add_food" />
+
           <div class="col-12 col-lg">
-            <label class="form-label text-uppercase small mb-1"
-              >Pick food</label
-            >
+            <label class="form-label text-uppercase small mb-1">
+              Pick food
+            </label>
+
             <select
               name="food_consumed"
               class="form-select soft-input"
               required
             >
               {% for food in foods %}
-              <option value="{{ food.id }}">{{ food.name }}</option>
+              <option value="{{ food.id }}">
+                {{ food.name }} - {{ food.category|title }}
+              </option>
               {% endfor %}
             </select>
           </div>
+
+          <div class="col-6 col-lg-2">
+            <label class="form-label text-uppercase small mb-1">
+              Quantity (g)
+            </label>
+
+            <input
+              type="number"
+              name="quantity_grams"
+              class="form-control soft-input"
+              min="1"
+              step="0.1"
+              value="100"
+              required
+            />
+          </div>
+
           <div class="col-6 col-lg-3">
-            <label class="form-label text-uppercase small mb-1">Meal</label>
-            <select name="meal" class="form-select soft-input">
+            <label class="form-label text-uppercase small mb-1"> Meal </label>
+
+            <select name="meal_type" class="form-select soft-input">
               <option value="breakfast">Breakfast</option>
               <option value="lunch">Lunch</option>
               <option value="dinner">Dinner</option>
               <option value="snack">Snack</option>
             </select>
           </div>
+
           <div class="col-6 col-lg-auto">
-            <label class="form-label text-uppercase small mb-1 invisible"
-              >Action</label
-            >
+            <label class="form-label text-uppercase small mb-1 invisible">
+              Action
+            </label>
+
             <button class="btn btn-dark w-100">Add to day</button>
           </div>
         </form>
@@ -330,6 +407,7 @@
               <tr>
                 <th class="text-uppercase small">Meal</th>
                 <th class="text-uppercase small">Food</th>
+                <th class="text-uppercase small text-end">Qty</th>
                 <th class="text-uppercase small text-end">Cal</th>
                 <th class="text-uppercase small text-end">Carbs</th>
                 <th class="text-uppercase small text-end">Protein</th>
@@ -337,29 +415,29 @@
                 <th></th>
               </tr>
             </thead>
-            <tbody>
-              {% if consumed_food %}
-              {% regroup consumed_food by meal as meal_list %}
-              {% for meal in meal_list %}
-              <tr class="meal-divider">
-                <td colspan="7" class="fw-semibold ps-3 text-muted">
-                  {{ meal.grouper|title }}
-                </td>
-              </tr>
 
-              {% for c in meal.list %}
+            <tbody>
+              {% if consumed_food %} {% for c in consumed_food %}
               <tr class="{% if not is_today %}row-disabled{% endif %}">
-                <td class="text-capitalize text-muted">{{ meal.grouper }}</td>
+                <td class="text-capitalize text-muted">
+                  {{ c.meal_type|title }}
+                </td>
+
                 <td>
                   <div class="fw-semibold">{{ c.food_consumed.name }}</div>
+
                   <div class="text-muted microcopy">
-                    Logged on {{ c.date|date:"M d" }}
+                    {{ c.food_consumed.category|title }} | Logged on {{
+                    c.date|date:"M d" }}
                   </div>
                 </td>
-                <td class="text-end">{{ c.food_consumed.calories }}</td>
-                <td class="text-end">{{ c.food_consumed.carbs }}</td>
-                <td class="text-end">{{ c.food_consumed.protein }}</td>
-                <td class="text-end">{{ c.food_consumed.fat }}</td>
+
+                <td class="text-end">{{ c.quantity_grams }}g</td>
+                <td class="text-end">{{ c.calories_consumed }}</td>
+                <td class="text-end">{{ c.carbs_consumed }}</td>
+                <td class="text-end">{{ c.protein_consumed }}</td>
+                <td class="text-end">{{ c.fat_consumed }}</td>
+
                 <td class="text-end">
                   {% if is_today %}
                   <a
@@ -373,11 +451,9 @@
                   {% endif %}
                 </td>
               </tr>
-              {% endfor %}
-              {% endfor %}
-              {% else %}
+              {% endfor %} {% else %}
               <tr>
-                <td colspan="7" class="py-5 text-center text-muted">
+                <td colspan="8" class="py-5 text-center text-muted">
                   No food logged yet. Start by adding breakfast.
                 </td>
               </tr>
@@ -387,57 +463,27 @@
         </div>
       </section>
     </main>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
       (function () {
-        const weightInput = document.getElementById("userWeight");
-        const heightInput = document.getElementById("userHeight");
-        const statusEl = document.getElementById("profileStatus");
-        const saveBtn = document.getElementById("saveProfile");
-        const bmiEl = document.getElementById("bmiValue");
         const themeButtons = document.querySelectorAll("[data-theme-toggle]");
         const body = document.body;
 
-        // THEME
         function applyTheme(theme) {
           body.classList.remove("theme-light", "theme-dark");
           body.classList.add(theme === "dark" ? "theme-dark" : "theme-light");
           localStorage.setItem("ct_theme", theme);
         }
+
         const storedTheme = localStorage.getItem("ct_theme");
-        applyTheme(storedTheme || "dark"); // default dark to match current styling
+        applyTheme(storedTheme || "dark");
+
         themeButtons.forEach((btn) => {
-          btn.addEventListener("click", () => applyTheme(btn.dataset.themeToggle));
-        });
-
-        if (!weightInput || !heightInput || !saveBtn) return;
-
-        const storedWeight = localStorage.getItem("ct_weight");
-        const storedHeight = localStorage.getItem("ct_height");
-        if (storedWeight) weightInput.value = storedWeight;
-        if (storedHeight) heightInput.value = storedHeight;
-
-        function updateBMI() {
-          const w = parseFloat(weightInput.value);
-          const h = parseFloat(heightInput.value);
-          if (w > 0 && h > 0) {
-            const bmi = w / Math.pow(h / 100, 2);
-            bmiEl.textContent = bmi.toFixed(1);
-          } else {
-            bmiEl.textContent = "--";
-          }
-        }
-
-        updateBMI();
-        weightInput.addEventListener("input", updateBMI);
-        heightInput.addEventListener("input", updateBMI);
-
-        saveBtn.addEventListener("click", function () {
-          localStorage.setItem("ct_weight", weightInput.value || "");
-          localStorage.setItem("ct_height", heightInput.value || "");
-          statusEl.textContent = "Saved";
-          statusEl.classList.remove("text-muted");
-          updateBMI();
+          btn.addEventListener("click", function () {
+            applyTheme(btn.dataset.themeToggle);
+          });
         });
       })();
     </script>

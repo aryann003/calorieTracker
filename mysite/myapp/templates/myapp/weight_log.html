@@ -1,0 +1,94 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Weight Log</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="{% static 'myapp/css/main.css' %}" />
+  </head>
+
+  <body>
+    <div class="background-blur"></div>
+
+    <main class="page-wrapper container py-5">
+      <section class="card glass p-4 mb-4">
+        <div
+          class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4"
+        >
+          <div>
+            <p class="eyebrow mb-1">Progress tracking</p>
+            <h1 class="display-6 mb-0">Weight Log</h1>
+            <p class="text-muted mb-0">
+              Add weight records to track your progress over time.
+            </p>
+          </div>
+
+          <a href="{% url 'index' %}" class="btn btn-outline-secondary">
+            Back to dashboard
+          </a>
+        </div>
+
+        {% if messages %} {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %} {% endif %}
+
+        <form method="POST" class="row g-3">
+          {% csrf_token %}
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Weight in kg</label>
+            {{ form.weight_kg }}
+          </div>
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Date</label>
+            {{ form.date }}
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-dark">Save Weight</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card glass p-0">
+        <div class="table-responsive">
+          <table class="table table-borderless mb-0 align-middle">
+            <thead class="table-head">
+              <tr>
+                <th class="text-uppercase small">Date</th>
+                <th class="text-uppercase small text-end">Weight</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% if weight_logs %} {% for log in weight_logs %}
+              <tr>
+                <td>{{ log.date|date:"M d, Y" }}</td>
+                <td class="text-end">{{ log.weight_kg }} kg</td>
+              </tr>
+              {% endfor %} {% else %}
+              <tr>
+                <td colspan="2" class="py-5 text-center text-muted">
+                  No weight logs yet. Add your first weight record.
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -117,7 +117,7 @@ class UserProfile(models.Model):
     created_at = models.DateTimeField(default=now)
 
     def bmi(self):
-        if not self.height_cm or not self.weight_kg:
+        if not self.height_cm or not self.current_weight_kg:
             return None
         height_m = self.height_cm / 100
         return round(self.current_weight_kg / (height_m ** 2), 2)
@@ -135,7 +135,7 @@ class UserProfile(models.Model):
         return "Obesity"
     
     def bmr(self):
-        if not self.age or not self.height_cm or not self.current_wright_kg:
+        if not self.age or not self.height_cm or not self.current_weight_kg:
             return None
 
         if self.gender == 'female':
@@ -165,11 +165,12 @@ class UserProfile(models.Model):
         if tdee_value is None:
             return None
         if self.goal_type == 'lose':
-            return round(tdee_value - 500,2)
+            target = tdee_value - 500
         elif self.goal_type == 'gain':
-            return round(tdee_value + 500,2)
+            target = tdee_value + 500
         else:
-            return round(max(tdee_value,1200),2)
+            target = tdee_value
+        return round(max(target, 1200),2)
         
     def target_protein(self):
         calories = self.target_calories()
