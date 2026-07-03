@@ -1,13 +1,14 @@
 :root {
   --ink: #0f172a;
-  --muted: #5f6c86;
+  --muted: #64748b;
   --card: #ffffff;
-  --accent: #2f9e8b;
-  --accent-2: #5d6bff;
+  --accent: #16a34a;
+  --accent-2: #2563eb;
   --accent-3: #ff8c42;
-  --surface: rgba(255, 255, 255, 0.7);
-  --border: #dfe6f1;
-  --shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  --danger: #dc2626;
+  --surface: rgba(255, 255, 255, 0.9);
+  --border: #e2e8f0;
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.09);
 }
 
 *,
@@ -17,20 +18,20 @@
 }
 
 body {
-  background: radial-gradient(120% 120% at 10% 10%, #eef5ff 0, #d5e9ff 40%, #f7fbff 100%);
+  background: #f8fafc;
   min-height: 100vh;
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
   color: var(--ink);
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .background-blur {
   position: fixed;
   inset: 0;
-  background: radial-gradient(600px at 20% 20%, rgba(93, 107, 255, 0.18), transparent 55%),
-    radial-gradient(500px at 80% 0%, rgba(47, 158, 139, 0.18), transparent 55%);
-  filter: blur(50px);
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 42%),
+    radial-gradient(520px at 85% 15%, rgba(22, 163, 74, 0.12), transparent 60%);
   z-index: 0;
+  pointer-events: none;
 }
 
 .page-wrapper {
@@ -39,11 +40,11 @@ body {
 }
 
 .glass {
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
   background: var(--surface);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 .hero {
@@ -69,15 +70,15 @@ body {
 }
 
 .pill-good {
-  background: rgba(47, 158, 139, 0.12);
-  color: #1f7a69;
-  border-color: rgba(47, 158, 139, 0.2);
+  background: rgba(22, 163, 74, 0.12);
+  color: #166534;
+  border-color: rgba(22, 163, 74, 0.24);
 }
 
 .pill-warn {
-  background: rgba(255, 140, 66, 0.14);
-  color: #a85a18;
-  border-color: rgba(255, 140, 66, 0.3);
+  background: #fff7ed;
+  color: #9a3412;
+  border-color: #fed7aa;
 }
 
 .pill-ghost {
@@ -96,8 +97,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.02em;
   color: #fff;
-  background: linear-gradient(135deg, #5d6bff, #2f9e8b);
-  box-shadow: 0 12px 28px rgba(93, 107, 255, 0.25);
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
   flex-shrink: 0;
 }
 
@@ -107,10 +108,11 @@ body {
 
 .metric-card {
   padding: 16px;
-  background: #fff;
+  background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+  color: var(--ink);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -130,6 +132,7 @@ body {
   font-weight: 700;
   font-size: 30px;
   margin: 4px 0;
+  color: var(--ink);
 }
 
 .metric-suffix {
@@ -160,11 +163,11 @@ body {
 }
 
 .progress-calories {
-  background: linear-gradient(90deg, #2f9e8b, #5d6bff);
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
 }
 
 .progress-carbs {
-  background: linear-gradient(90deg, #5d6bff, #8ea2ff);
+  background: linear-gradient(90deg, var(--accent-2), #60a5fa);
 }
 
 .progress-protein {
@@ -178,11 +181,38 @@ body {
 .soft-input {
   border-radius: 12px;
   border: 1px solid var(--border);
-  background-color: #f8fbff;
+  background-color: #ffffff;
+  color: var(--ink);
 }
 
 .card {
   border: none;
+  color: var(--ink);
+}
+
+.form-label,
+label {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.form-control,
+.form-select {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: #ffffff;
+  color: var(--ink);
+  min-height: 44px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.14);
+}
+
+.form-control::placeholder {
+  color: #94a3b8;
 }
 
 .table-responsive {
@@ -208,6 +238,16 @@ body {
   transition: background 0.2s ease, transform 0.15s ease;
 }
 
+.table td,
+.table th {
+  color: var(--ink);
+}
+
+.table-head th {
+  color: #ffffff;
+  font-weight: 700;
+}
+
 .table tbody tr:hover {
   background: #f6f9ff;
 }
@@ -225,31 +265,65 @@ body {
 }
 
 .btn {
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
+  padding: 0.55rem 1rem;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9px;
+}
+
+.btn-lg {
+  padding: 0.7rem 1.15rem;
 }
 
 .btn-outline-primary {
-  border-color: rgba(93, 107, 255, 0.6);
-  color: #3141ff;
+  border-color: rgba(37, 99, 235, 0.55);
+  color: #1d4ed8;
 }
 
 .btn-outline-primary:hover {
-  background: rgba(93, 107, 255, 0.08);
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
 }
 
 .btn-dark {
-  background: linear-gradient(120deg, #0f172a, #1f2a3f);
+  background: #2563eb;
   border: none;
+  color: #ffffff;
+}
+
+.btn-dark:hover,
+.btn-dark:focus {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+.btn-outline-secondary {
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: var(--ink);
 }
 
 .btn-outline-danger {
-  border-color: #ef476f;
-  color: #c13052;
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 .btn-outline-danger:hover {
-  background: rgba(239, 71, 111, 0.08);
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
 }
 
 .alert {
@@ -316,6 +390,15 @@ body.theme-dark .form-select {
   border-color: var(--border);
 }
 
+body.theme-dark .form-label,
+body.theme-dark label {
+  color: var(--ink);
+}
+
+body.theme-dark .form-control::placeholder {
+  color: #94a3b8;
+}
+
 body.theme-dark .table-head {
   background: #0b1221;
   color: #dfe6ff;
@@ -363,7 +446,24 @@ body.theme-dark .btn-outline-danger {
 }
 
 body.theme-dark .btn-dark {
-  background: linear-gradient(120deg, #0d1423, #18243a);
+  background: #2563eb;
+  color: #ffffff;
+}
+
+body.theme-dark .btn-dark:hover,
+body.theme-dark .btn-dark:focus {
+  background: #1d4ed8;
+}
+
+body.theme-dark .btn-outline-secondary {
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+body.theme-dark .btn-outline-secondary:hover,
+body.theme-dark .btn-outline-secondary:focus {
+  background: rgba(255, 255, 255, 0.07);
+  color: #f8fafc;
 }
 
 body.theme-dark .alert-secondary {
