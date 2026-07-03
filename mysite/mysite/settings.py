@@ -1,12 +1,12 @@
 """
 Django settings for mysite project.
+Production-ready for Render deployment and local SQLite development.
 """
 
 from pathlib import Path
 import os
-from urllib.parse import parse_qs, unquote, urlparse
-from django.core.exceptions import ImproperlyConfigured
-import certifi
+import dj_database_url
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,196 +27,165 @@ def env_list(key, default=None):
 
 
 def load_env_file(path):
+    """
+    Simple local .env loader.
+    Useful for local development only.
+    Render will use its own environment variables.
+    """
     if not path.exists():
         return
+
     for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
+
         if not line or line.startswith("#") or "=" not in line:
             continue
+
         key, value = line.split("=", 1)
         os.environ.setdefault(key.strip(), value.strip())
 
 
 load_env_file(BASE_DIR / "mysite" / ".env")
 
-on_managed_prod = bool(os.getenv("VERCEL") or os.getenv("RENDER"))
-
 
 # SECURITY
+
 SECRET_KEY = os.getenv(
     "SECRET_KEY",
-    "django-insecure-q2&&w(8tc=vi&grb#fhbyz*afqxu^mv+-b9z8e&+*&*7!kf(ou"
+    "django-insecure-local-development-key-change-in-production"
 )
 
-DEBUG = env_bool("DEBUG", default=not on_managed_prod)
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", ".vercel.app", ".onrender.com"])
-CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS")
+DEBUG = env_bool("DEBUG", default=True)
+
+ALLOWED_HOSTS = env_list(
+    "ALLOWED_HOSTS",
+    default=["localhost", "127.0.0.1"]
+)
+
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[]
+)
 
 
-# APPS
+# APPLICATIONS
+
 INSTALLED_APPS = [
-    'myapp',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "myapp",
+
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 ]
 
 
 # MIDDLEWARE
+
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
-ROOT_URLCONF = 'mysite.urls'
+ROOT_URLCONF = "mysite.urls"
 
 
 # TEMPLATES
+
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
 
-WSGI_APPLICATION = 'mysite.wsgi.application'
+WSGI_APPLICATION = "mysite.wsgi.application"
 
 
 # DATABASE
-mysql_name = os.getenv('MYSQLDATABASE') or os.getenv('MYSQL_DATABASE', 'railway')
-mysql_user = os.getenv('MYSQLUSER') or os.getenv('MYSQL_USER', 'root')
-mysql_password = os.getenv('MYSQLPASSWORD') or os.getenv('MYSQL_ROOT_PASSWORD', '')
-mysql_host = os.getenv('MYSQLHOST') or os.getenv('MYSQL_HOST')
-mysql_port = os.getenv('MYSQLPORT') or os.getenv('MYSQL_PORT', '3306')
-USE_SQLITE = env_bool("USE_SQLITE", default=not on_managed_prod)
-mysql_url = os.getenv("MYSQL_URL") or os.getenv("DATABASE_URL")
+# Local development: SQLite
+# Render production: PostgreSQL using DATABASE_URL
 
-if mysql_url:
-    parsed = urlparse(mysql_url)
-    if parsed.scheme.startswith("mysql"):
-        if parsed.hostname:
-            mysql_host = parsed.hostname
-        if parsed.port:
-            mysql_port = str(parsed.port)
-        if parsed.username:
-            mysql_user = unquote(parsed.username)
-        if parsed.password:
-            mysql_password = unquote(parsed.password)
-        if parsed.path and parsed.path != "/":
-            mysql_name = parsed.path.lstrip("/")
-        mysql_query = parse_qs(parsed.query or "")
-        # Support common URL params like ?ssl-mode=DISABLED / ?sslmode=disable.
-        url_ssl_mode = (
-            (mysql_query.get("ssl-mode", [None])[0])
-            or (mysql_query.get("sslmode", [None])[0])
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
         )
-        if url_ssl_mode and not os.getenv("MYSQL_SSL_MODE"):
-            os.environ["MYSQL_SSL_MODE"] = str(url_ssl_mode)
-
-if USE_SQLITE and not on_managed_prod:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-elif mysql_host and mysql_host != 'your-host':
-    db_options = {
-        "connect_timeout": int(os.getenv("MYSQL_CONNECT_TIMEOUT", "15")),
-        "read_timeout": int(os.getenv("MYSQL_READ_TIMEOUT", "30")),
-        "write_timeout": int(os.getenv("MYSQL_WRITE_TIMEOUT", "30")),
-        "charset": "utf8mb4",
-    }
-
-    # Railway's public MySQL proxy may drop SSL handshakes; enable SSL explicitly
-    # with MYSQL_SSL_MODE=required when your provider supports it.
-    mysql_ssl_mode = os.getenv("MYSQL_SSL_MODE", "disabled").strip().lower()
-    if mysql_ssl_mode not in {"disabled", "off", "false", "0"}:
-        db_options["ssl"] = {"ca": os.getenv("MYSQL_SSL_CA", certifi.where())}
-
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': mysql_name,
-            'USER': mysql_user,
-            'PASSWORD': mysql_password,
-            'HOST': mysql_host,
-            'PORT': mysql_port,
-            'CONN_MAX_AGE': int(os.getenv("DB_CONN_MAX_AGE", "60")),
-            'CONN_HEALTH_CHECKS': env_bool("DB_CONN_HEALTH_CHECKS", default=True),
-            'OPTIONS': db_options,
-        }
     }
 else:
-    if on_managed_prod:
-        raise ImproperlyConfigured(
-            "MySQL is required in production. Set MYSQLHOST, MYSQLPORT, "
-            "MYSQLDATABASE, MYSQLUSER, and MYSQLPASSWORD."
-        )
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
+
 # PASSWORD VALIDATION
+
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 
 # INTERNATIONALIZATION
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
 
 # STATIC FILES
-STATIC_URL = '/static/'
+
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Use non-manifest storage by default to avoid 500 errors when a static
-# manifest is not present (common on first deploy/serverless setups).
-if env_bool("USE_MANIFEST_STATICFILES", default=False):
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-else:
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 WHITENOISE_USE_FINDERS = True
 
 
 # AUTH REDIRECTS
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/'
+
+LOGIN_URL = "/login/"
+LOGIN_REDIRECT_URL = "/dashboard/"
+LOGOUT_REDIRECT_URL = "/"
+
+
+# DEFAULT PRIMARY KEY FIELD TYPE
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
