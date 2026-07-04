@@ -6,6 +6,10 @@ The Django web app allows users to log food intake, track calories and macronutr
 
 ---
 
+## Live Demo
+
+https://calorietracker-2-auqx.onrender.com
+
 ## Features
 
 ### Django Web App
