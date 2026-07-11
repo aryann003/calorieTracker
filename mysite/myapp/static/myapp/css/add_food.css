@@ -1,20 +1,21 @@
 body {
-  background: #f8fafc;
+  background: #f5f6f1;
   min-height: 100vh;
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
   color: #0f172a;
+  overflow-x: hidden;
 }
 
 .form-wrapper {
-  max-width: 520px;
+  width: min(100%, 520px);
   margin: auto;
 }
 
 .card {
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  border: 1px solid #d9e1dc;
   background: #ffffff;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 22px rgba(24, 33, 47, 0.06);
 }
 
 h4 {
@@ -32,11 +33,12 @@ input,
 select,
 .form-control {
   border-radius: 12px !important;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d9e1dc;
   background: #ffffff;
   color: #0f172a;
   padding: 10px 12px;
   min-height: 44px;
+  width: 100%;
 }
 
 input:focus,
@@ -47,46 +49,71 @@ select:focus,
 }
 
 .btn {
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 10px 18px;
   font-weight: 600;
+  white-space: normal;
 }
 
 .btn-success {
-  background: #2563eb;
+  background: #2f6f4e;
   border: none;
   color: #ffffff;
 }
 
 .btn-success:hover,
 .btn-success:focus {
-  background: #1d4ed8;
+  background: #285f43;
   color: #ffffff;
 }
 
 .btn-outline-secondary {
-  border-color: #cbd5e1;
-  color: #475569;
+  border-color: #c9d4cf;
+  color: #52615c;
 }
 
 .btn-outline-secondary:hover,
 .btn-outline-secondary:focus {
-  background: #f1f5f9;
-  border-color: #94a3b8;
+  background: #eef3ef;
+  border-color: #9dafab;
   color: #0f172a;
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding-inline: 12px;
+    padding-block: 24px !important;
+  }
+
+  .card {
+    padding: 16px !important;
+  }
+
+  h4 {
+    font-size: 1.35rem;
+  }
+
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
 
 /* Dark theme for food tracker */
 @media (prefers-color-scheme: dark) {
   body {
-    background: radial-gradient(110% 110% at 15% 20%, #0c1220 0, #0a0f1b 50%, #070b13 100%);
+    background: #101515;
     color: #e9edf8;
   }
 
   .card {
-    background: #101623;
-    border-color: #1e2637;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    background: #151b1f;
+    border-color: #2a3535;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
   }
 
   h4,

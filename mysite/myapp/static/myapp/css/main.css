@@ -1,14 +1,15 @@
 :root {
-  --ink: #0f172a;
-  --muted: #64748b;
+  --ink: #18212f;
+  --muted: #667085;
   --card: #ffffff;
-  --accent: #16a34a;
-  --accent-2: #2563eb;
-  --accent-3: #ff8c42;
-  --danger: #dc2626;
-  --surface: rgba(255, 255, 255, 0.9);
-  --border: #e2e8f0;
-  --shadow: 0 18px 45px rgba(15, 23, 42, 0.09);
+  --accent: #2f6f4e;
+  --accent-2: #245f73;
+  --accent-3: #b7791f;
+  --danger: #b42318;
+  --surface: #ffffff;
+  --border: #d9e1dc;
+  --shadow: 0 8px 22px rgba(24, 33, 47, 0.06);
+  --page: #f5f6f1;
 }
 
 *,
@@ -18,18 +19,18 @@
 }
 
 body {
-  background: #f8fafc;
+  background: var(--page);
   min-height: 100vh;
   font-family: "Space Grotesk", "Segoe UI", sans-serif;
   color: var(--ink);
   letter-spacing: 0;
+  overflow-x: hidden;
 }
 
 .background-blur {
   position: fixed;
   inset: 0;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.08), transparent 42%),
-    radial-gradient(520px at 85% 15%, rgba(22, 163, 74, 0.12), transparent 60%);
+  background: linear-gradient(180deg, #ffffff 0, rgba(255, 255, 255, 0) 260px);
   z-index: 0;
   pointer-events: none;
 }
@@ -37,14 +38,19 @@ body {
 .page-wrapper {
   position: relative;
   z-index: 1;
+  width: min(100%, 1320px);
 }
 
 .glass {
   border: 1px solid var(--border);
   background: var(--surface);
-  backdrop-filter: blur(8px);
   box-shadow: var(--shadow);
-  border-radius: 16px;
+  border-radius: 8px;
+}
+
+.auth-card {
+  max-width: 520px;
+  margin-inline: auto;
 }
 
 .hero {
@@ -63,62 +69,62 @@ body {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: 6px;
   font-weight: 600;
   font-size: 13px;
   border: 1px solid transparent;
 }
 
 .pill-good {
-  background: rgba(22, 163, 74, 0.12);
-  color: #166534;
-  border-color: rgba(22, 163, 74, 0.24);
+  background: #edf7f1;
+  color: #245b40;
+  border-color: #c9dfd2;
 }
 
 .pill-warn {
-  background: #fff7ed;
-  color: #9a3412;
-  border-color: #fed7aa;
+  background: #fff4e0;
+  color: #8a5a14;
+  border-color: #edd49a;
 }
 
 .pill-ghost {
-  background: rgba(15, 23, 42, 0.05);
+  background: #f4f6f5;
   color: var(--ink);
-  border-color: rgba(15, 23, 42, 0.08);
+  border-color: var(--border);
 }
 
 .avatar-badge {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: #fff;
-  background: linear-gradient(135deg, var(--accent-2), var(--accent));
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.22);
+  background: var(--accent);
+  box-shadow: none;
   flex-shrink: 0;
 }
 
 .date-form input {
-  min-width: 160px;
+  min-width: min(160px, 100%);
 }
 
 .metric-card {
   padding: 16px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 8px;
   color: var(--ink);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 14px rgba(24, 33, 47, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 16px 35px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(24, 33, 47, 0.07);
 }
 
 .metric-label {
@@ -130,9 +136,10 @@ body {
 
 .metric-value {
   font-weight: 700;
-  font-size: 30px;
+  font-size: clamp(24px, 4vw, 30px);
   margin: 4px 0;
   color: var(--ink);
+  overflow-wrap: anywhere;
 }
 
 .metric-suffix {
@@ -149,8 +156,8 @@ body {
 
 .progress {
   height: 12px;
-  border-radius: 999px;
-  background-color: #edf1f7;
+  border-radius: 6px;
+  background-color: #e7ece8;
 }
 
 .progress-thick {
@@ -158,24 +165,24 @@ body {
 }
 
 .progress-bar {
-  border-radius: 999px;
+  border-radius: 6px;
   transition: width 0.6s ease;
 }
 
 .progress-calories {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  background: var(--accent);
 }
 
 .progress-carbs {
-  background: linear-gradient(90deg, var(--accent-2), #60a5fa);
+  background: var(--accent-2);
 }
 
 .progress-protein {
-  background: linear-gradient(90deg, #ff8c42, #ffb16f);
+  background: var(--accent-3);
 }
 
 .progress-fat {
-  background: linear-gradient(90deg, #ef476f, #ff8fab);
+  background: #9f4756;
 }
 
 .soft-input {
@@ -198,7 +205,7 @@ label {
 
 .form-control,
 .form-select {
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background-color: #ffffff;
   color: var(--ink);
@@ -216,14 +223,19 @@ label {
 }
 
 .table-responsive {
-  border-radius: 18px;
-  overflow: hidden;
+  border-radius: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  min-width: 760px;
 }
 
 .table-head {
   position: sticky;
   top: 0;
-  background: #0f172a;
+  background: #25352d;
   color: #fff;
   box-shadow: 0 6px 12px rgba(15, 23, 42, 0.1);
   z-index: 2;
@@ -253,7 +265,7 @@ label {
 }
 
 .meal-divider {
-  background: #f0f4fb;
+  background: #eef3ef;
 }
 
 .row-disabled {
@@ -265,15 +277,16 @@ label {
 }
 
 .btn {
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 600;
   padding: 0.55rem 1rem;
+  white-space: normal;
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .btn-sm {
   padding: 0.35rem 0.75rem;
-  border-radius: 9px;
+  border-radius: 7px;
 }
 
 .btn-lg {
@@ -281,25 +294,25 @@ label {
 }
 
 .btn-outline-primary {
-  border-color: rgba(37, 99, 235, 0.55);
-  color: #1d4ed8;
+  border-color: #8ab09a;
+  color: #275d41;
 }
 
 .btn-outline-primary:hover {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #2f6f4e;
+  border-color: #2f6f4e;
   color: #ffffff;
 }
 
 .btn-dark {
-  background: #2563eb;
+  background: #2f6f4e;
   border: none;
   color: #ffffff;
 }
 
 .btn-dark:hover,
 .btn-dark:focus {
-  background: #1d4ed8;
+  background: #285f43;
   color: #ffffff;
 }
 
@@ -327,7 +340,7 @@ label {
 }
 
 .alert {
-  border-radius: 14px;
+  border-radius: 8px;
 }
 
 .profile-card {
@@ -339,8 +352,16 @@ label {
 }
 
 @media (max-width: 768px) {
+  .page-wrapper {
+    padding-inline: 12px;
+  }
+
+  .glass {
+    border-radius: 8px;
+  }
+
   .hero {
-    padding: 20px;
+    padding: 18px;
   }
 
   .metric-card {
@@ -350,23 +371,82 @@ label {
   .table > :not(caption) > * > * {
     padding: 12px 10px;
   }
+
+  .date-form {
+    width: 100%;
+  }
+
+  .date-form input,
+  .date-form button,
+  .profile-toggle,
+  .btn-group,
+  .btn-group .btn {
+    width: 100%;
+  }
+
+  .avatar-badge {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    font-size: 15px;
+  }
+
+  .page-wrapper {
+    padding-block: 24px !important;
+  }
+
+  .hero,
+  .card.glass.p-4,
+  .card.glass.p-5 {
+    padding: 16px !important;
+  }
+
+  .display-5,
+  .display-6 {
+    font-size: clamp(28px, 9vw, 36px);
+    line-height: 1.1;
+  }
+
+  .lead {
+    font-size: 1rem;
+  }
+
+  .pill {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .btn,
+  .btn-lg,
+  .btn-sm {
+    width: 100%;
+  }
+
+  .metric-label,
+  .eyebrow {
+    letter-spacing: 0.08em;
+  }
 }
 
 /* Dark theme toggle */
 body.theme-dark {
   --ink: #e9edf8;
   --muted: #9fb0c8;
-  --card: #101623;
-  --surface: rgba(22, 30, 44, 0.7);
-  --border: #1e2637;
-  --shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-  background: radial-gradient(120% 120% at 10% 10%, #0c1220 0, #0a111d 40%, #0a0f1b 100%);
+  --card: #151b1f;
+  --surface: #151b1f;
+  --border: #2a3535;
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  --page: #101515;
+  background: var(--page);
 }
 
 body.theme-dark .background-blur {
-  background: radial-gradient(600px at 20% 20%, rgba(93, 107, 255, 0.16), transparent 55%),
-    radial-gradient(500px at 80% 0%, rgba(47, 158, 139, 0.12), transparent 55%);
-  filter: blur(70px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 260px);
 }
 
 body.theme-dark .glass,
@@ -446,13 +526,13 @@ body.theme-dark .btn-outline-danger {
 }
 
 body.theme-dark .btn-dark {
-  background: #2563eb;
+  background: #3d8060;
   color: #ffffff;
 }
 
 body.theme-dark .btn-dark:hover,
 body.theme-dark .btn-dark:focus {
-  background: #1d4ed8;
+  background: #4b9270;
 }
 
 body.theme-dark .btn-outline-secondary {
