@@ -16,6 +16,21 @@ class FoodForm(forms.ModelForm):
             'fat': forms.NumberInput(attrs={'class': 'form-control','step':'0.01'}),
         }
 
+    def clean_name(self):
+        name = self.cleaned_data['name'].strip()
+        if not name:
+            raise forms.ValidationError("Name cannot be blank.")
+        return name
+
+    def clean(self):
+        cleaned = super().clean()
+        macros = [cleaned.get(field) for field in ('carbs', 'protein', 'fat')]
+        if all(value is not None for value in macros) and sum(macros) > 100.5:
+            raise forms.ValidationError(
+                "Carbs + protein + fat cannot exceed 100 g per 100 g of food."
+            )
+        return cleaned
+
 
 
 class ConsumeForm(forms.ModelForm):

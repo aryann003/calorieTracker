@@ -1,6 +1,8 @@
 # CalorieTracker BI Dashboard
 
-A full-stack calorie tracking and nutrition analytics project built with **Django**, **Python**, **SQLite**, and **Power BI**.
+[![CI](https://github.com/aryann003/calorieTracker/actions/workflows/ci.yml/badge.svg)](https://github.com/aryann003/calorieTracker/actions/workflows/ci.yml)
+
+A full-stack calorie tracking and nutrition analytics project built with **Django**, **Python**, **PostgreSQL**, and **Power BI**.
 
 The Django web app allows users to log food intake, track calories and macronutrients, manage health profile details, and record weight progress. A custom Django export command converts the database records into clean CSV files, which are then used in Power BI to build interactive Daily and Period analytics dashboards.
 
@@ -9,6 +11,9 @@ The Django web app allows users to log food intake, track calories and macronutr
 ## Live Demo
 
 https://calorietracker-2-auqx.onrender.com
+
+Demo account (pre-filled with three weeks of food and weight logs): username `demo`, password `DemoPass123!`.
+The app runs on a free tier, so the first request after a quiet period can take about a minute.
 
 ## Features
 
@@ -22,6 +27,7 @@ https://calorietracker-2-auqx.onrender.com
 - Calculate BMI, BMR, TDEE, and personalized nutrition targets
 - Add and track weight logs
 - Quantity-based calorie and macro calculation
+- Shared catalogue of 47 common foods (plus your own private foods)
 
 ### Power BI Dashboard
 
@@ -40,8 +46,20 @@ https://calorietracker-2-auqx.onrender.com
 
 ## Tech Stack
 
-| Area            | Technology                            |
-| --------------- | ------------------------------------- |
+| Area            | Technology                                        |
+| --------------- | ------------------------------------------------- |
+| Backend         | Django, Python                                    |
+| Database        | PostgreSQL (Neon) in production, SQLite locally   |
+| Frontend        | HTML, CSS, Bootstrap                              |
+| Data Export     | Python CSV, Django Management Command             |
+| Analytics       | Power BI                                          |
+| BI Modeling     | Relationships, Date Table, DAX                    |
+| Testing         | Pytest, pytest-django, coverage (100+ tests)      |
+| CI / Delivery   | GitHub Actions (PostgreSQL service), Docker       |
+| Hosting         | Render, WhiteNoise, Gunicorn                      |
+| Version Control | Git, GitHub                                       |
+
+--------------- | ------------------------------------- |
 | Backend         | Django, Python                        |
 | Database        | SQLite                                |
 | Frontend        | HTML, CSS, Bootstrap                  |
@@ -57,7 +75,7 @@ https://calorietracker-2-auqx.onrender.com
 ```text
 Django Web App
         ↓
-SQLite Database
+PostgreSQL (Neon)
         ↓
 Python Export Command
         ↓
@@ -228,56 +246,32 @@ Period Calories Goal % = DIVIDE([Total Calories], [Period Target Calories], 0)
 
 ## How to Run Locally
 
-### 1. Clone the repository
+### With Docker (PostgreSQL included)
+
+```bash
+docker compose up --build
+docker compose exec web python manage.py seed_demo
+```
+
+Open http://localhost:8000 and sign in as `demo` / `DemoPass123!`.
+
+### Without Docker
 
 ```bash
 git clone https://github.com/aryann003/calorieTracker.git
 cd calorieTracker
-```
-
-### 2. Go to Django project folder
-
-```bash
-cd mysite
-```
-
-### 3. Create virtual environment
-
-```bash
 python -m venv venv
-```
-
-### 4. Activate virtual environment
-
-For Windows PowerShell:
-
-```bash
-venv\Scripts\activate
-```
-
-### 5. Install dependencies
-
-```bash
+source venv/bin/activate          # Windows PowerShell: .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-### 6. Run migrations
-
-```bash
+cd mysite
+cp ../.env.example .env           # then edit; DEBUG=True is fine for local use
 python manage.py migrate
-```
-
-### 7. Start server
-
-```bash
+python manage.py seed_foods       # shared catalogue of 47 foods
+python manage.py seed_demo        # optional demo account with sample data
 python manage.py runserver
 ```
 
-Open:
-
-```text
-http://127.0.0.1:8000/
-```
+Open http://127.0.0.1:8000/. Without `DATABASE_URL` the app uses a local SQLite file.
 
 ---
 
@@ -297,14 +291,65 @@ Home → Refresh
 
 ---
 
+## Testing
+
+```bash
+pip install -r requirements-dev.txt
+cd mysite
+pytest --cov
+```
+
+The suite needs PostgreSQL (`DATABASE_URL` defaults to `postgres://calorie:calorie@localhost:5432/calorie` in `pytest.ini`). It covers:
+
+- the nutrition formulas (BMI, BMR, TDEE, calorie and macro targets), checked against hand-calculated values
+- logging, totals and goals on the dashboard
+- authorization: users can only see, log and delete their own data
+- input validation (negative or impossible values, `nan`, `inf`)
+- timezone handling, weight tracking, the Power BI export, and the seed commands
+- a query-count test that fails if the dashboard starts running one query per entry
+
+CI runs it on every push against a PostgreSQL service container.
+
+---
+
+## Correctness and Security Notes
+
+- **Validated input:** quantities must be finite and between 0 and 10,000 g; foods and profile values have realistic ranges; macros cannot exceed 100 g per 100 g.
+- **CSRF-safe actions:** removing an entry and logging out are POST-only with CSRF tokens.
+- **Data isolation:** a user can only log foods they own or that are shared, and only delete their own entries.
+- **User's calendar day:** "today" follows `TIME_ZONE` (default `Asia/Kolkata`), not UTC.
+- **Current weight** is the most recent entry by date, so backfilling an old weigh-in does not overwrite it.
+- **Fewer queries:** the dashboard loads food details with `select_related`, so it runs a constant 4 queries instead of one extra query per logged item.
+- **Safe defaults:** `DEBUG` is off unless enabled, and the app refuses to start without a `SECRET_KEY` in production.
+
+---
+
+## Deployment (Render + Neon)
+
+`render.yaml` defines the web service and `build.sh` the build (install, collect static files, migrate, seed the shared foods and, if `SEED_DEMO=true`, the demo account). The database is an external PostgreSQL (Neon) so data persists across redeploys.
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection string (set in the Render dashboard) |
+| `SECRET_KEY` | Generated by the blueprint |
+| `DEBUG` | `False` in production |
+| `SEED_DEMO` | `true` creates the demo account on deploy (skipped if it exists) |
+| `TIME_ZONE` | Optional, default `Asia/Kolkata` |
+
+---
+
+## Known Limitations
+
+- Nutrition values in the shared catalogue are approximate (per 100 g, from common food tables).
+- Targets use a fixed 25% protein / 50% carbs / 25% fat split, and the `other` gender option uses the male BMR constant.
+- The free tier sleeps when idle; Power BI refresh is manual (run the export, then Refresh).
+
 ## Future Improvements
 
-- Deploy Django app with PostgreSQL
-- Add user-facing charts inside Django using Chart.js
+- User-facing charts inside Django using Chart.js
 - Connect Power BI directly to PostgreSQL
-- Add scheduled refresh
-- Add weekly nutrition reports
-- Add role-based admin analytics dashboard
+- Scheduled refresh and weekly nutrition reports
+- Password reset by email, and a role-based admin analytics dashboard
 
 ---
 

@@ -137,12 +137,12 @@
                   Change password
                 </a>
 
-                <a
-                  href="{% url 'logout' %}"
-                  class="btn btn-outline-danger btn-sm"
-                >
-                  Log out
-                </a>
+                <form method="post" action="{% url 'logout' %}" class="d-inline">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    Log out
+                  </button>
+                </form>
 
                 <a
                   href="{% url 'home' %}"
@@ -439,12 +439,16 @@
 
                 <td class="text-end">
                   {% if is_today %}
-                  <a
-                    href="{% url 'delete_consume' c.id %}"
-                    class="btn btn-sm btn-outline-danger"
+                  <form
+                    method="post"
+                    action="{% url 'delete_consume' c.id %}"
+                    class="d-inline"
                   >
-                    Remove
-                  </a>
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      Remove
+                    </button>
+                  </form>
                   {% else %}
                   <span class="pill pill-ghost">Locked</span>
                   {% endif %}

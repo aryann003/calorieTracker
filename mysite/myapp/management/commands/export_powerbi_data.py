@@ -5,6 +5,7 @@ from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 
 from myapp.models import Consume, Food, UserProfile, WeightLog
 
@@ -38,7 +39,14 @@ class Command(BaseCommand):
             users_filter = {}
             self.stdout.write(self.style.WARNING("Exporting data for all users"))
 
-        foods = Food.objects.filter(**users_filter).select_related("user")
+        # Shared foods (no owner) must be included for a per-user export too,
+        # otherwise consumption_logs would point at food_ids missing from foods.csv
+        # and the Power BI relationship breaks.
+        if selected_user:
+            foods = Food.objects.filter(Q(user=selected_user) | Q(user__isnull=True))
+        else:
+            foods = Food.objects.all()
+        foods = foods.select_related("user")
         consumption_logs = Consume.objects.filter(**users_filter).select_related(
             "user", "food_consumed"
         )
@@ -78,8 +86,9 @@ class Command(BaseCommand):
                 writer.writerow(
                     [
                         food.id,
-                        food.user.id,
-                        food.user.username,
+                        # Shared foods have no owner: leave user columns blank, not a crash.
+                        food.user.id if food.user else "",
+                        food.user.username if food.user else "shared",
                         food.name,
                         food.category,
                         food.calories,

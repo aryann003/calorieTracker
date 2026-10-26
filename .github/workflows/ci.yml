@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mysite
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: calorie
+          POSTGRES_USER: calorie
+          POSTGRES_PASSWORD: calorie
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U calorie"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SECRET_KEY: ci-only-secret-key-that-is-long-enough-0123456789
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+      DATABASE_URL: postgres://calorie:calorie@localhost:5432/calorie
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r ../requirements-dev.txt
+      - run: python manage.py check --deploy --fail-level ERROR
+      - run: python manage.py makemigrations --check --dry-run
+      - name: Run tests with coverage
+        run: pytest --cov --cov-report=term-missing --cov-fail-under=85

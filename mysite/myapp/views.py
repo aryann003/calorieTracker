@@ -1,11 +1,14 @@
+import math
 from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.timezone import now
+from django.utils.timezone import localdate
+from django.views.decorators.http import require_POST
 
 from .forms import FoodForm, UserProfileForm, WeightLogForm
 from .models import Consume, Food, UserProfile, WeightLog
@@ -36,22 +39,44 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 
+@require_POST
 @login_required
 def logout_view(request):
+    # POST only: a GET link could log users out from any other web page.
     logout(request)
     return redirect('home')
 
 
+MAX_QUANTITY_GRAMS = 10000
+
+
+def visible_foods(user):
+    """Foods a user may log: their own plus the shared (user-less) catalogue."""
+    return Food.objects.filter(Q(user=user) | Q(user__isnull=True)).order_by('name')
+
+
+def parse_quantity(raw):
+    """Return a valid grams value, or None. Rejects nan, inf, zero and absurd amounts."""
+    try:
+        value = float(raw or 100)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(value) or value <= 0 or value > MAX_QUANTITY_GRAMS:
+        return None
+    return value
+
+
 def get_selected_date(request):
+    # localdate() is the user's calendar day (settings.TIME_ZONE), not UTC's.
     date_str = request.GET.get('date')
 
     if not date_str:
-        return now().date()
+        return localdate()
 
     try:
         return datetime.strptime(date_str, "%Y-%m-%d").date()
     except ValueError:
-        return now().date()
+        return localdate()
 
 
 def get_user_goals(profile):
@@ -84,13 +109,10 @@ def get_user_goals(profile):
 @login_required
 def index(request):
     selected_date = get_selected_date(request)
-    today = now().date()
+    today = localdate()
     is_today = selected_date == today
 
-    foods = (
-        Food.objects.filter(user=request.user)
-        | Food.objects.filter(user__isnull=True)
-    ).order_by('name')
+    foods = visible_foods(request.user)
 
     profile = UserProfile.objects.filter(user=request.user).first()
 
@@ -99,10 +121,13 @@ def index(request):
             messages.warning(request, "You can only add food for today.")
             return redirect(f"/dashboard/?date={selected_date}")
 
-        food_id = request.POST.get('food_consumed')
-        food = get_object_or_404(Food, id=food_id)
+        # Only foods this user can see: someone else's private food is a 404.
+        try:
+            food_id = int(request.POST.get('food_consumed'))
+        except (TypeError, ValueError):
+            food_id = None
+        food = get_object_or_404(foods, id=food_id)
 
-        quantity_str = request.POST.get('quantity_grams') or '100'
         meal_type = request.POST.get('meal_type') or 'breakfast'
 
         valid_meals = [choice[0] for choice in Consume.MEAL_CHOICES]
@@ -110,13 +135,13 @@ def index(request):
         if meal_type not in valid_meals:
             meal_type = 'breakfast'
 
-        try:
-            quantity_grams = float(quantity_str)
-        except ValueError:
-            quantity_grams = 100
+        quantity_grams = parse_quantity(request.POST.get('quantity_grams'))
 
-        if quantity_grams <= 0:
-            messages.error(request, "Quantity must be greater than 0 grams.")
+        if quantity_grams is None:
+            messages.error(
+                request,
+                f"Enter a quantity between 0 and {MAX_QUANTITY_GRAMS:,} grams.",
+            )
             return redirect(f"/dashboard/?date={selected_date}")
 
         Consume.objects.create(
@@ -130,10 +155,11 @@ def index(request):
         messages.success(request, "Food added successfully.")
         return redirect(f"/dashboard/?date={selected_date}")
 
+    # select_related: one query for all rows instead of one extra per row.
     consumed_food = Consume.objects.filter(
         user=request.user,
         date=selected_date
-    ).order_by('meal_type', 'created_at')
+    ).select_related('food_consumed').order_by('meal_type', 'created_at')
 
     total_calories = round(
         sum(item.calories_consumed() for item in consumed_food),
@@ -219,8 +245,10 @@ def add_food(request):
     return render(request, 'myapp/add_food.html', {'form': form})
 
 
+@require_POST
 @login_required
 def delete_consume(request, consume_id):
+    # POST only: a GET link could be triggered from any other web page (CSRF).
     consume = get_object_or_404(
         Consume,
         id=consume_id,
@@ -229,7 +257,7 @@ def delete_consume(request, consume_id):
 
     entry_date = consume.date
 
-    if entry_date < now().date():
+    if entry_date < localdate():
         messages.warning(
             request,
             "You cannot delete entries from previous dates."
@@ -283,10 +311,17 @@ def weight_log_view(request):
             weight_log.user = request.user
             weight_log.save()
 
+            # Current weight is the most recent entry by DATE. Backfilling an
+            # older measurement must not overwrite it.
+            latest = (
+                WeightLog.objects.filter(user=request.user)
+                .order_by('-date', '-created_at')
+                .first()
+            )
             profile, created = UserProfile.objects.get_or_create(
                 user=request.user
             )
-            profile.current_weight_kg = weight_log.weight_kg
+            profile.current_weight_kg = latest.weight_kg
             profile.save()
 
             messages.success(request, "Weight log added successfully.")

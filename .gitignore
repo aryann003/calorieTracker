@@ -50,3 +50,10 @@ piptemp2/
 Thumbs.db
 .vscode/
 .idea/
+
+# Generated files
+staticfiles/
+powerbi_exports/
+.coverage
+.pytest_cache/
+htmlcov/

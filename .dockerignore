@@ -1,0 +1,16 @@
+.git
+.github
+__pycache__
+*.pyc
+mysite/db.sqlite3
+mysite/staticfiles
+mysite/powerbi_exports
+.env
+mysite/.env
+mysite/mysite/.env
+mysite/tests
+.pytest_cache
+.coverage
+venv
+screenshots
+powerbi

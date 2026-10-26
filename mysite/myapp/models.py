@@ -1,6 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
-from django.utils.timezone import now
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils.timezone import localdate, now
 
 class Food(models.Model):
     CATEGORY_CHOICES = [
@@ -30,10 +31,23 @@ class Food(models.Model):
         default = 'other'
     )
 
-    calories = models.FloatField(help_text="Calories per 100 grams")
-    carbs = models.FloatField(help_text="Carbs per 100 grams")
-    protein = models.FloatField(help_text="Protein per 100 grams")
-    fat = models.FloatField(help_text="Fat per 100 grams")
+    # 100 g of pure fat is about 900 kcal, so that is the physical ceiling.
+    calories = models.FloatField(
+        help_text="Calories per 100 grams",
+        validators=[MinValueValidator(0), MaxValueValidator(900)],
+    )
+    carbs = models.FloatField(
+        help_text="Carbs per 100 grams",
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    protein = models.FloatField(
+        help_text="Protein per 100 grams",
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    fat = models.FloatField(
+        help_text="Fat per 100 grams",
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
     created_at = models.DateTimeField(default=now)
 
     def __str__(self):
@@ -58,9 +72,17 @@ class Consume(models.Model):
         choices=MEAL_CHOICES,
         default='breakfast'
     )
-    quantity_grams =  models.FloatField(help_text="Quantity consumed in grams",default=100)
-    date = models.DateField(default=now)
+    quantity_grams = models.FloatField(
+        help_text="Quantity consumed in grams",
+        default=100,
+        validators=[MinValueValidator(0.01), MaxValueValidator(10000)],
+    )
+    date = models.DateField(default=localdate)
     created_at = models.DateTimeField(default=now)
+
+    class Meta:
+        # The dashboard always filters by user and date.
+        indexes = [models.Index(fields=["user", "date"], name="consume_user_date_idx")]
 
     def calories_consumed(self):
         return round((self.quantity_grams * self.food_consumed.calories)/ 100, 2)
@@ -99,11 +121,23 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    age = models.PositiveIntegerField(help_text="Age in years",null = True, blank = True)
+    age = models.PositiveIntegerField(
+        help_text="Age in years", null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(120)],
+    )
     gender = models.CharField(max_length = 10, choices = GENDER_CHOICES, default= 'male')
-    height_cm  = models.FloatField(help_text="Height in centimeters",null = True, blank = True)
-    current_weight_kg = models.FloatField(help_text="Current weight in kilograms",null = True, blank = True)
-    target_weight_kg = models.FloatField(help_text="Target weight in kilograms",null = True, blank = True)  
+    height_cm = models.FloatField(
+        help_text="Height in centimeters", null=True, blank=True,
+        validators=[MinValueValidator(50), MaxValueValidator(260)],
+    )
+    current_weight_kg = models.FloatField(
+        help_text="Current weight in kilograms", null=True, blank=True,
+        validators=[MinValueValidator(20), MaxValueValidator(500)],
+    )
+    target_weight_kg = models.FloatField(
+        help_text="Target weight in kilograms", null=True, blank=True,
+        validators=[MinValueValidator(20), MaxValueValidator(500)],
+    )
     goal_type = models.CharField(
         max_length=20,
         choices = GOAL_CHOICES,
@@ -195,8 +229,8 @@ class UserProfile(models.Model):
 
 class WeightLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    weight_kg = models.FloatField()
-    date = models.DateField(default=now)
+    weight_kg = models.FloatField(validators=[MinValueValidator(20), MaxValueValidator(500)])
+    date = models.DateField(default=localdate)
     created_at = models.DateTimeField(default=now)
 
     class Meta:

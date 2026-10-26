@@ -1,16 +1,20 @@
+# Render blueprint. The database is an external PostgreSQL (e.g. Neon) so data
+# survives redeploys and does not expire: set DATABASE_URL in the dashboard.
 services:
   - type: web
     name: calorie-tracker
-    env: python
+    runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python mysite/manage.py collectstatic --noinput
-    startCommand: python mysite/manage.py migrate --noinput && gunicorn --chdir mysite mysite.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: bash build.sh
+    startCommand: gunicorn --chdir mysite mysite.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.13.0
+        value: 3.13.5
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: false
-      - key: ALLOWED_HOSTS
-        value: .onrender.com
+        value: "False"
+      - key: DATABASE_URL
+        sync: false
+      - key: SEED_DEMO
+        value: "true"
